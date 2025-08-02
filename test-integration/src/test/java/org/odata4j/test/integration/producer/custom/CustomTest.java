@@ -4,6 +4,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.junit.Test;
 import org.odata4j.consumer.ODataConsumer;
@@ -278,7 +282,7 @@ public class CustomTest extends CustomBaseTest {
 
   @SuppressWarnings("unchecked")
   private void checkCollection(OProperty<?> prop, EdmType itemType, ValueGenerator vg) {
-    //OProperty<?> prop = e.getProperty("BagOStrings");
+    // OProperty<?> prop = e.getProperty("BagOStrings");
     assertTrue(prop != null);
     assertTrue(prop.getType() instanceof EdmCollectionType);
     EdmCollectionType ct = (EdmCollectionType) prop.getType();
@@ -293,4 +297,67 @@ public class CustomTest extends CustomBaseTest {
     }
   }
 
+  @Test
+  public void testMLE() throws InterruptedException {
+    String content = rtFacade.getWebResource(endpointUri + "MLEs('foobar')/$value" + "?$format=json").getEntity();
+    assertEquals("here we have some content for the mle with id: ('foobar')", content);
+  }
+
+  @Test
+  public void testCreateMLE() throws InterruptedException {
+    /**
+     * There appears to be a strange race condition or something in the test
+     * environment:
+     * if the first request to the server has a payload, the server can
+     * timeout waiting for data from the client. Not sure why or if it is a client
+     * or server issue. Workaround: issue a GET first to prime things.
+     */
+    String contentBefore = rtFacade.getWebResource(endpointUri + "MLEs('ANewMLE')/$value" + "?$format=json")
+        .getEntity();
+
+    Map<String, Object> headers = new HashMap<String, Object>();
+    headers.put("Slug", "ANewMLE"); // the Id
+
+    String content = "This MLE was created by the test testCreateMLE()";
+    int status = rtFacade.postWebResource(endpointUri + "MLEs", new ByteArrayInputStream(content.getBytes()),
+        MediaType.APPLICATION_OCTET_STREAM_TYPE, headers).getStatusCode();
+    assertEquals(Status.CREATED.getStatusCode(), status);
+
+    String content2 = rtFacade.getWebResource(endpointUri + "MLEs('ANewMLE')/$value" + "?$format=json").getEntity();
+    assertEquals(content, content2);
+  }
+
+  @Test
+  public void testUpdateMLE() {
+    /**
+     * There appears to be a strange race condition or something in the test
+     * environment:
+     * if the first request to the server has a payload, the server can
+     * timeout waiting for data from the client. Not sure why or if it is a client
+     * or server issue. Workaround: issue a GET first to prime things.
+     */
+    String contentBefore = rtFacade.getWebResource(endpointUri + "MLEs('foobar')/$value" + "?$format=json").getEntity();
+
+    String content = "This MLE was updated by the test testUpdateMLE()";
+    int status = rtFacade.putWebResource(endpointUri + "MLEs('foobar')", new ByteArrayInputStream(content.getBytes()),
+        MediaType.TEXT_PLAIN_TYPE, null).getStatusCode();
+    assertEquals(Status.OK.getStatusCode(), status);
+
+    String content2 = rtFacade.getWebResource(endpointUri + "MLEs('foobar')/$value" + "?$format=json").getEntity();
+    assertEquals(content, content2);
+  }
+
+  @Test
+  public void testDeleteMLE() throws Exception {
+    ODataConsumer c = this.rtFacade.createODataConsumer(endpointUri, null);
+    OEntityKey key = OEntityKey.create("Id", "blatfoo");
+    c.deleteEntity("MLEs", key).execute();
+
+    try {
+      c.getEntity("MLEs", key).execute();
+      fail("Not found exception expected but not thrown");
+    } catch (ODataProducerException ex) {
+      assertThat(ex.getHttpStatus().getStatusCode(), is(Status.NOT_FOUND.getStatusCode()));
+    }
+  }
 }

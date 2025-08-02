@@ -9,21 +9,24 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.core4j.Enumerable;
 import org.core4j.Func1;
 import org.odata4j.core.OBindableEntities;
 import org.odata4j.core.OBindableEntity;
 import org.odata4j.core.OCollection;
+import org.odata4j.core.OCollections;
 import org.odata4j.core.OEntities;
 import org.odata4j.core.OEntity;
 import org.odata4j.core.OEntityKey;
 import org.odata4j.core.OLink;
 import org.odata4j.core.OLinks;
+import org.odata4j.core.OObject;
 import org.odata4j.core.OProperties;
 import org.odata4j.core.OProperty;
 import org.odata4j.core.StreamEntity;
+import org.odata4j.core.OSimpleObjects;
 import org.odata4j.edm.EdmCollectionType;
 import org.odata4j.edm.EdmComplexType;
 import org.odata4j.edm.EdmDataServices;
@@ -59,7 +62,8 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
   protected FeedCustomizationMapping fcMapping;
   protected EdmFunctionImport function;
 
-  public AtomFeedFormatParser(EdmDataServices metadata, String entitySetName, OEntityKey entityKey, FeedCustomizationMapping fcMapping, EdmFunctionImport function) {
+  public AtomFeedFormatParser(EdmDataServices metadata, String entitySetName, OEntityKey entityKey,
+      FeedCustomizationMapping fcMapping, EdmFunctionImport function) {
     this.metadata = metadata;
     this.entitySetName = entitySetName;
     this.entityKey = entityKey;
@@ -223,7 +227,9 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
 
   }
 
-  public static Iterable<OProperty<?>> parseProperties(XMLEventReader2 reader, StartElement2 propertiesElement, EdmDataServices metadata, EdmStructuralType structuralType) {
+  public static Iterable<OProperty<?>> parseProperties(
+      XMLEventReader2 reader, StartElement2 propertiesElement,
+      EdmDataServices metadata, EdmStructuralType structuralType) {
     List<OProperty<?>> rt = new ArrayList<OProperty<?>>();
 
     while (reader.hasNext()) {
@@ -234,46 +240,82 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
       }
 
       if (event.isStartElement() && event.asStartElement().getName().getNamespaceUri().equals(NS_DATASERVICES)) {
-
-        String name = event.asStartElement().getName().getLocalPart();
-        Attribute2 typeAttribute = event.asStartElement().getAttributeByName(M_TYPE);
-        Attribute2 nullAttribute = event.asStartElement().getAttributeByName(M_NULL);
-        boolean isNull = nullAttribute != null && "true".equals(nullAttribute.getValue());
-
-        OProperty<?> op = null;
-
-        EdmType et = null;
-        if (typeAttribute != null) {
-          String type = typeAttribute.getValue();
-          et = metadata.resolveType(type);
-          if (et == null) {
-            // property arrived with an unknown type
-            throw new RuntimeException("unknown property type: " + type);
-          }
-        } else {
-          EdmProperty property = (EdmProperty) structuralType.findProperty(name);
-          if (property != null)
-            et = property.getType();
-          else
-            et = EdmSimpleType.STRING; // we must support open types
-        }
-
-        if (et != null && (!et.isSimple())) {
-          if (et instanceof EdmCollectionType) {
-            OCollection colV = AtomCollectionFormatParser.parse(reader, event.asStartElement(), metadata, ((EdmCollectionType) et).getItemType());
-            op = OProperties.collection(name, (EdmCollectionType) et, colV);
-          } else {
-            EdmStructuralType est = (EdmStructuralType) et;
-            op = OProperties.complex(name, (EdmComplexType) et, isNull ? null : Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, est)).toList());
-          }
-        } else {
-          op = OProperties.parseSimple(name, (EdmSimpleType<?>) et, isNull ? null : reader.getElementText());
-        }
+        OProperty<?> op = parseProperty(reader, metadata, structuralType, event);
         rt.add(op);
       }
     }
-
     throw new RuntimeException();
+  }
+
+  private static OProperty<?> parseProperty(XMLEventReader2 reader,
+      EdmDataServices metadata, EdmStructuralType structuralType,
+      XMLEvent2 event) {
+    String name = event.asStartElement().getName().getLocalPart();
+    Attribute2 typeAttribute = event.asStartElement().getAttributeByName(M_TYPE);
+    Attribute2 nullAttribute = event.asStartElement().getAttributeByName(M_NULL);
+    boolean isNull = nullAttribute != null && "true".equals(nullAttribute.getValue());
+
+    OProperty<?> op = null;
+
+    EdmType et = null;
+    if (typeAttribute != null) {
+      String type = typeAttribute.getValue();
+      et = metadata.resolveType(type);
+      if (et == null) {
+        // property arrived with an unknown type
+        throw new RuntimeException("unknown property type: " + type);
+      }
+    } else {
+      EdmProperty property = (EdmProperty) structuralType.findProperty(name);
+      if (property != null)
+        et = property.getType();
+      else
+        et = EdmSimpleType.STRING; // we must support open types
+    }
+
+    if (et instanceof EdmCollectionType) {
+      op = readCollection(name, (EdmCollectionType) et, reader, event.asStartElement(), metadata, structuralType);
+    } else {
+      if (et != null && !et.isSimple()) {
+        EdmStructuralType est = (EdmStructuralType) et;
+        op = OProperties.complex(name, (EdmComplexType) et,
+            isNull ? null : Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, est)).toList());
+      } else {
+        op = OProperties.parseSimple(name, (EdmSimpleType<?>) et, isNull ? null : reader.getElementText());
+      }
+    }
+    return op;
+  }
+
+  private static OProperty<?> readCollection(String name,
+      EdmCollectionType collectionType, XMLEventReader2 reader,
+      StartElement2 collectionElement, EdmDataServices metadata, EdmStructuralType structuralType) {
+    EdmType componentType = collectionType.getItemType();
+
+    OCollection.Builder<OObject> b = OCollections.newBuilder(componentType);
+
+    while (reader.hasNext()) {
+      XMLEvent2 event = reader.nextEvent();
+
+      if (event.isEndElement() && event.asEndElement().getName().equals(collectionElement.getName())) {
+        break;
+      }
+
+      if (event.isStartElement() && event.asStartElement().getName().getNamespaceUri().equals(NS_DATASERVICES)) {
+        OProperty<?> op = null;
+        Attribute2 nullAttribute = event.asStartElement().getAttributeByName(M_NULL);
+        boolean isNull = nullAttribute != null && "true".equals(nullAttribute.getValue());
+        if (!componentType.isSimple()) {
+          EdmStructuralType est = (EdmStructuralType) componentType;
+          op = OProperties.complex(name, (EdmComplexType) componentType, isNull ? null
+              : Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, est)).toList());
+        } else {
+          op = OProperties.parseSimple(name, (EdmSimpleType<?>) componentType, isNull ? null : reader.getElementText());
+        }
+        b.add(OSimpleObjects.create((EdmSimpleType<?>) componentType, op.getValue()));
+      }
+    }
+    return OProperties.collection(name, collectionType, b.build());
   }
 
   private AtomLink parseAtomLink(XMLEventReader2 reader, StartElement2 linkElement, EdmEntitySet entitySet) {
@@ -293,10 +335,11 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
       targetEntitySet = metadata.getEdmEntitySet(navProperty.getToRole().getType());
 
     // expected cases:
-    // 1.  </link>                  - no inlined content, i.e. deferred
-    // 2.  <m:inline/></link>       - inlined content but null entity or empty feed
-    // 3.  <m:inline><feed>...</m:inline></link> - inlined content with 1 or more items
-    // 4.  <m:inline><entry>..</m:inline></link> - inlined content 1 an item
+    // 1. </link> - no inlined content, i.e. deferred
+    // 2. <m:inline/></link> - inlined content but null entity or empty feed
+    // 3. <m:inline><feed>...</m:inline></link> - inlined content with 1 or more
+    // items
+    // 4. <m:inline><entry>..</m:inline></link> - inlined content 1 an item
 
     while (reader.hasNext()) {
       XMLEvent2 event = reader.nextEvent();
@@ -323,8 +366,10 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
     return ft;
   }
 
-  private DataServicesAtomEntry parseDSAtomEntry(String etag, EdmEntityType entityType, XMLEventReader2 reader, XMLEvent2 event) {
-    List<OProperty<?>> properties = Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, entityType)).toList();
+  private DataServicesAtomEntry parseDSAtomEntry(String etag, EdmEntityType entityType, XMLEventReader2 reader,
+      XMLEvent2 event) {
+    List<OProperty<?>> properties = Enumerable
+        .create(parseProperties(reader, event.asStartElement(), metadata, entityType)).toList();
     return new DataServicesAtomEntry(etag, properties);
   }
 
@@ -348,13 +393,14 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
   private static final Pattern ENTITY_SET_NAME = Pattern.compile("\\/([^\\/\\(]+)\\(");
 
   public static OEntityKey parseEntityKey(String atomEntryId) {
-    //we have to decode this atomEntry id which is actually uri of entity.
+    // we have to decode this atomEntry id which is actually uri of entity.
     atomEntryId = ConversionUtil.decodeString(atomEntryId);
     Matcher m = ENTITY_SET_NAME.matcher(atomEntryId);
 
-    // Fix for NPE when  
+    // Fix for NPE when
     // 1. nested entity like /Categories(1)/Products(76) is requested and
-    // 2. entity with keys like /PointSetField(attribute='X (EASTING)',point_set_id=19)
+    // 2. entity with keys like /PointSetField(attribute='X
+    // (EASTING)',point_set_id=19)
 
     int count = 0;
     int index = 0;
@@ -365,7 +411,7 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
     if (count == 0)
       throw new RuntimeException("Unable to parse the entity-key from atom entry id: " + atomEntryId);
 
-    //key(s) is the last occurrence in the pattern match
+    // key(s) is the last occurrence in the pattern match
     return OEntityKey.parse(atomEntryId.substring(index - 1));
   }
 
@@ -405,12 +451,12 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
       XMLEvent2 event = reader.nextEvent();
 
       if (event.isEndElement() && event.asEndElement().getName().equals(entryElement.getName())) {
-        rt.id = id; //http://localhost:8810/Oneoff01.svc/Comment(1)
+        rt.id = id; // http://localhost:8810/Oneoff01.svc/Comment(1)
         rt.title = title;
         rt.summary = summary;
         rt.updated = updated;
-        rt.categoryScheme = categoryScheme; //http://schemas.microsoft.com/ado/2007/08/dataservices/scheme
-        rt.categoryTerm = categoryTerm; //NorthwindModel.Customer
+        rt.categoryScheme = categoryScheme; // http://schemas.microsoft.com/ado/2007/08/dataservices/scheme
+        rt.categoryTerm = categoryTerm; // NorthwindModel.Customer
         rt.contentType = contentType;
         rt.atomLinks = atomLinks;
         rt.contentType = contentType;
@@ -428,7 +474,8 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
             streamEntity.setAtomEntitySource(rt.mediaSource);
             streamEntity.setAtomEntityType(rt.contentType);
             mediaList.add(streamEntity);
-            OEntity entity = entityFromAtomEntry(metadata, entitySet, dsae, fcMapping, bindableExtension, mediaList.get(0));
+            OEntity entity = entityFromAtomEntry(metadata, entitySet, dsae, fcMapping, bindableExtension,
+                mediaList.get(0));
             dsae.setEntity(entity);
           } else {
             OEntity entity = entityFromAtomEntry(metadata, entitySet, dsae, fcMapping, bindableExtension);
@@ -616,8 +663,8 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
                 link.title, link.href, relatedEntity));
           } else {
             // no inlined entity
-          rt.add(OLinks.relatedEntity(link.relation, link.title, link.href));
-        }
+            rt.add(OLinks.relatedEntity(link.relation, link.title, link.href));
+          }
       } else if (link.relation.startsWith(XmlFormatWriter.edit_media)) {
         rt.add(OLinks.namedStreamLink(link.relation, link.title, link.href, link.type));
       } else if (link.relation.startsWith(XmlFormatWriter.mediaresource)) {

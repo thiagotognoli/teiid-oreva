@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 import java.io.StringWriter;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +53,8 @@ public abstract class AbstractErrorFormatWriterTest {
   }
 
   private void assertErrorResponse(String code, String message, String innerError) {
-    assertTrue(Pattern.compile(buildRegex(code, message, innerError), Pattern.DOTALL).matcher(stringWriter.toString()).matches());
+    assertTrue(Pattern.compile(buildRegex(code, message, innerError), Pattern.DOTALL).matcher(stringWriter.toString())
+        .matches());
   }
 
   protected abstract String buildRegex(String code, String message, String innerError);
@@ -66,7 +67,8 @@ public abstract class AbstractErrorFormatWriterTest {
 
   @Test
   public void message() throws Exception {
-    formatWriter.write(uriInfoMock, stringWriter, ExceptionMappingProvider.getErrorResponse(ODATA_EXCEPTION_WITH_MESSAGE, false));
+    formatWriter.write(uriInfoMock, stringWriter,
+        ExceptionMappingProvider.getErrorResponse(ODATA_EXCEPTION_WITH_MESSAGE, false));
     assertErrorResponse(".+", MESSAGE, null);
   }
 
@@ -78,7 +80,9 @@ public abstract class AbstractErrorFormatWriterTest {
 
   @Test
   public void innerErrorWithCausedBy() throws Exception {
-    formatWriter.write(uriInfoMock, stringWriter, ExceptionMappingProvider.getErrorResponse(ODATA_EXCEPTION_WITH_CAUSE, true));
-    assertErrorResponse(".+", ".+", ODATA_EXCEPTION_WITH_CAUSE.getClass().getName() + ".+Caused by: " + CAUSE.getClass().getName() + ".+");
+    formatWriter.write(uriInfoMock, stringWriter,
+        ExceptionMappingProvider.getErrorResponse(ODATA_EXCEPTION_WITH_CAUSE, true));
+    assertErrorResponse(".+", ".+",
+        ODATA_EXCEPTION_WITH_CAUSE.getClass().getName() + ".+Caused by: " + CAUSE.getClass().getName() + ".+");
   }
 }

@@ -3,10 +3,10 @@ package org.odata4j.producer;
 import java.util.List;
 import java.util.Locale;
 
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 
 /**
- * An (probably the only ever) implementation of ODataHeadersContext 
+ * An (probably the only ever) implementation of ODataHeadersContext
  * 
  */
 public class ODataHeadersImpl implements ODataHeadersContext {

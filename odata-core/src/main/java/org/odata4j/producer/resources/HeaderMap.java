@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 /**
  * A {@link MultivaluedMap} with String keys and values backed by a HashMap.
  *
- * Although keys are stored case-sensitive, all (internal) comparisons are done case-insensitive.
+ * Although keys are stored case-sensitive, all (internal) comparisons are done
+ * case-insensitive.
  * I.e. {@code get("key")} and {@code get("KEY")} return the same values.
  */
 public class HeaderMap extends HashMap<String, List<String>> implements MultivaluedMap<String, String> {
@@ -39,6 +40,37 @@ public class HeaderMap extends HashMap<String, List<String>> implements Multival
     if (values == null || values.size() == 0)
       return null;
     return values.get(0);
+  }
+
+  @Override
+  public void addFirst(String key, String value) {
+    List<String> values = this.get(key);
+    if (values == null)
+      values = new ArrayList<String>();
+    values.add(0, value);
+    this.put(key, values);
+  }
+
+  @Override
+  public boolean equalsIgnoreValueOrder(MultivaluedMap<String, String> otherMap) {
+    if (this == otherMap) {
+      return true;
+    }
+    if (!keySet().equals(otherMap.keySet())) {
+      return false;
+    }
+    for (Entry<String, List<String>> e : entrySet()) {
+      List<String> olist = otherMap.get(e.getKey());
+      if (e.getValue().size() != olist.size()) {
+        return false;
+      }
+      for (String v : e.getValue()) {
+        if (!olist.contains(v)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   @Override
@@ -77,4 +109,19 @@ public class HeaderMap extends HashMap<String, List<String>> implements Multival
         return super.remove(k);
     return null;
   }
+
+  @Override
+  public void addAll(String key, String... newValues) {
+    for (String value : newValues) {
+      add(key, value);
+    }
+  }
+
+  @Override
+  public void addAll(String key, List<String> valueList) {
+    for (String value : valueList) {
+      add(key, value);
+    }
+  }
+
 }

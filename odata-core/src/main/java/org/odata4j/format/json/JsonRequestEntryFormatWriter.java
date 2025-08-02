@@ -2,7 +2,8 @@ package org.odata4j.format.json;
 
 import java.io.Writer;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.odata4j.core.ODataConstants;
 import org.odata4j.format.Entry;

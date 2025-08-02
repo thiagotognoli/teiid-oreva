@@ -6,21 +6,21 @@ import java.net.URI;
 import java.sql.Blob;
 import java.util.logging.Logger;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.Providers;
 
 import org.core4j.Enumerable;
 import org.odata4j.core.ODataConstants;
@@ -45,18 +45,15 @@ import org.odata4j.producer.ODataContextImpl;
 import org.odata4j.producer.ODataProducer;
 import org.odata4j.producer.PropertyResponse;
 import org.odata4j.producer.QueryInfo;
+import org.odata4j.producer.RawResponse;
 
 public class PropertyRequestResource extends BaseResource {
 
-  private static final Logger log =
-      Logger.getLogger(PropertyRequestResource.class.getName());
+  private static final Logger log = Logger.getLogger(PropertyRequestResource.class.getName());
 
   @PUT
   public Response updateEntity(
-      @Context HttpHeaders httpHeaders,
-      @Context UriInfo uriInfo,
-      @Context ContextResolver<ODataProducer> producerResolver,
-      @Context SecurityContext securityContext,
+      @Context Providers providers,
       @PathParam("entitySetName") String entitySetName,
       @PathParam("id") String id,
       @PathParam("navProp") String navProp,
@@ -64,8 +61,8 @@ public class PropertyRequestResource extends BaseResource {
 
     ODataProducer producer = producerResolver.getContext(ODataProducer.class);
     Enumerable<EdmProperty> props = producer.getMetadata().getEdmEntitySet(entitySetName).getType().getProperties();
-    
-    // only support update NamedStream property 
+
+    // only support update NamedStream property
     for (EdmProperty prop : props) {
       if (prop.getName().equals(navProp)) {
         if (prop.getType().getFullyQualifiedTypeName().equals("Edm.Stream")) {
@@ -89,15 +86,15 @@ public class PropertyRequestResource extends BaseResource {
     throw new NotImplementedException("NavProp: updateEntity not supported yet.");
   }
 
-
-  private Response updateNamedStreamResponse(ODataProducer producer, String entitySetName, String id, String navProp, QueryInfo query, InputStream payload) {
+  private Response updateNamedStreamResponse(ODataProducer producer, String entitySetName, String id, String navProp,
+      QueryInfo query, InputStream payload) {
     ContextStream streamContext = new ContextStream(payload, null, null);
     producer.updateEntityWithNamedStream(entitySetName, OEntityKey.parse(id), navProp, streamContext);
 
     // TODO: hmmh..isn't this supposed to be HTTP 204 No Content?
-    return Response.ok().header(ODataConstants.Headers.DATA_SERVICE_VERSION, ODataConstants.DATA_SERVICE_VERSION_HEADER).build();
+    return Response.ok().header(ODataConstants.Headers.DATA_SERVICE_VERSION, ODataConstants.DATA_SERVICE_VERSION_HEADER)
+        .build();
   }
-
 
   @POST
   public Response mergeEntity(
@@ -125,7 +122,8 @@ public class PropertyRequestResource extends BaseResource {
       OEntity entity = getRequestEntity(httpHeaders, uriInfo, payload, metadata, ees.getName(), OEntityKey.parse(id));
 
       // execute the create
-      EntityResponse response = producer.createEntity(ODataContextImpl.builder().aspect(httpHeaders).aspect(securityContext).build(),
+      EntityResponse response = producer.createEntity(
+          ODataContextImpl.builder().aspect(httpHeaders).aspect(securityContext).build(),
           entitySetName, OEntityKey.parse(id), navProp, entity);
 
       if (response == null) {
@@ -157,39 +155,47 @@ public class PropertyRequestResource extends BaseResource {
 
   @DELETE
   public Response deleteEntity(
-      @Context ContextResolver<ODataProducer> producerResolver,
+      @Context Providers providers,
       @PathParam("entitySetName") String entitySetName,
       @PathParam("id") String id,
       @PathParam("navProp") String navProp) {
     throw new NotImplementedException("Not supported yet.");
   }
 
-  protected Response getStreamResponse(HttpHeaders httpHeaders, UriInfo uriInfo, ODataProducer producer, String entitySetName, String entityId, String name,QueryInfo queryInfo,
+  protected Response getStreamResponse(HttpHeaders httpHeaders, UriInfo uriInfo, ODataProducer producer,
+      String entitySetName, String entityId, String name, QueryInfo queryInfo,
       SecurityContext securityContext, ODataContext odataContext) {
 
-//    ONamedStreamExtension namedStreamExtension = producer.findExtension(ONamedStreamExtension.class);
-//    if (namedStreamExtension == null) {
-//      throw new NotImplementedException();
-//    }
+    // ONamedStreamExtension namedStreamExtension =
+    // producer.findExtension(ONamedStreamExtension.class);
+    // if (namedStreamExtension == null) {
+    // throw new NotImplementedException();
+    // }
 
-//    ContextStream entityStreamCtx = namedStreamExtension.getInputStreamForNamedStream(odataContext, entitySetName, entityId, name, queryInfo);
-    ContextStream entityStreamCtx = producer.getInputStreamForNamedStream(entitySetName, OEntityKey.parse(entityId), name, queryInfo);
-    StreamingOutput outputStream = ValueRequestResource.getOutputStreamFromInputStream(entityStreamCtx.getInputStream());
+    // ContextStream entityStreamCtx =
+    // namedStreamExtension.getInputStreamForNamedStream(odataContext,
+    // entitySetName, entityId, name, queryInfo);
+    ContextStream entityStreamCtx = producer.getInputStreamForNamedStream(entitySetName, OEntityKey.parse(entityId),
+        name, queryInfo);
+    StreamingOutput outputStream = ValueRequestResource
+        .getOutputStreamFromInputStream(entityStreamCtx.getInputStream());
     String contentType = entityStreamCtx.getContentType();
     String contentDisposition = entityStreamCtx.getContentDisposition();
 
     // this is from latest odata4j code, why we choose outputStream?
-    //return Response.ok(entityStream, contentType).header("Content-Disposition", contentDisposition).build();
+    // return Response.ok(entityStream, contentType).header("Content-Disposition",
+    // contentDisposition).build();
 
     return Response.ok(outputStream, contentType).header("Content-Disposition", contentDisposition).build();
   }
-  
-  
+
   @GET
-  @Produces({
-      ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
+  @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
       ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
-      ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8 })
+      ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML,
+      ODataConstants.APPLICATION_JAVASCRIPT })
   public Response getNavProperty(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -221,17 +227,17 @@ public class PropertyRequestResource extends BaseResource {
         OptionsQueryParser.parseSelect(select));
 
     ODataProducer producer = producerResolver.getContext(ODataProducer.class);
-   
+
     Enumerable<EdmProperty> props = producer.getMetadata().getEdmEntitySet(entitySetName).getType().getProperties();
-    
+
     for (EdmProperty prop : props) {
       if (prop.getName().equals(navProp)) {
         if (prop.getType().getFullyQualifiedTypeName().equals("Edm.Stream")) {
-          return getStreamResponse(httpHeaders, uriInfo, producer, entitySetName, id, navProp, query, securityContext, null);
+          return getStreamResponse(httpHeaders, uriInfo, producer, entitySetName, id, navProp, query, securityContext,
+              null);
         }
       }
     }
-   
 
     if (navProp.endsWith("/$count")
         || navProp.endsWith("/$count/")
@@ -259,8 +265,7 @@ public class PropertyRequestResource extends BaseResource {
           .ok(entity, ODataConstants.TEXT_PLAIN_CHARSET_UTF8)
           .header(ODataConstants.Headers.DATA_SERVICE_VERSION, version.asString)
           .build();
-    }
-    else {
+    } else {
 
       BaseResponse response = producer.getNavProperty(
           ODataContextImpl.builder().aspect(httpHeaders).aspect(securityContext).build(),
@@ -274,7 +279,7 @@ public class PropertyRequestResource extends BaseResource {
       }
 
       ODataVersion version = ODataConstants.DATA_SERVICE_VERSION;
-      
+
       if (response instanceof PropertyResponse) {
         String edmTypeName = ((PropertyResponse) response).getProperty().getType().getFullyQualifiedTypeName();
         if (edmTypeName.equals("Edm.Stream")) {
@@ -290,12 +295,12 @@ public class PropertyRequestResource extends BaseResource {
         }
       }
 
-
       StringWriter sw = new StringWriter();
       FormatWriter<?> fwBase;
 
       /**
-       * The raw value of properties should be represented using the text/plain media type.
+       * The raw value of properties should be represented using the text/plain media
+       * type.
        * Response should be a plain text and shouldn't be wrapped by enclosing tags
        */
       if (navProp.endsWith("/$value")
@@ -305,7 +310,7 @@ public class PropertyRequestResource extends BaseResource {
         PropertyResponse pr = (PropertyResponse) response;
         Object value = pr.getProperty().getValue();
         if (value == null) {
-          // if value is null, send 404 response as per specs 
+          // if value is null, send 404 response as per specs
           // http://www.odata.org/documentation/odata-v3-documentation/odata-core/#10221_Requesting_a_Propertys_Raw_Value_using_value
           return Response.status(Status.NOT_FOUND).build();
         } else {
@@ -315,36 +320,44 @@ public class PropertyRequestResource extends BaseResource {
               .build();
         }
       } else if (response instanceof PropertyResponse) {
-        FormatWriter<PropertyResponse> fw =
-            FormatWriterFactory.getFormatWriter(
-                PropertyResponse.class,
-                httpHeaders.getAcceptableMediaTypes(),
-                format,
-                callback);
+        FormatWriter<PropertyResponse> fw = FormatWriterFactory.getFormatWriter(
+            PropertyResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
         fw.write(uriInfo, sw, (PropertyResponse) response);
         fwBase = fw;
+      } else if (response instanceof RawResponse) {
+        FormatWriter<RawResponse> fw = FormatWriterFactory.getFormatWriter(
+            RawResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
+
+        fw.write(uriInfo, sw, (RawResponse) response);
+        fwBase = fw;
       } else if (response instanceof EntityResponse) {
-        FormatWriter<EntityResponse> fw =
-            FormatWriterFactory.getFormatWriter(
-                EntityResponse.class,
-                httpHeaders.getAcceptableMediaTypes(),
-                format,
-                callback);
+        FormatWriter<EntityResponse> fw = FormatWriterFactory.getFormatWriter(
+            EntityResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
         fw.write(uriInfo, sw, (EntityResponse) response);
         fwBase = fw;
       } else if (response instanceof EntitiesResponse) {
-        FormatWriter<EntitiesResponse> fw =
-            FormatWriterFactory.getFormatWriter(
-                EntitiesResponse.class,
-                httpHeaders.getAcceptableMediaTypes(),
-                format,
-                callback);
+        FormatWriter<EntitiesResponse> fw = FormatWriterFactory.getFormatWriter(
+            EntitiesResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
         fw.write(uriInfo, sw, (EntitiesResponse) response);
         fwBase = fw;
 
         // TODO remove this hack, check whether we are Version 2.0 compatible anyway
         // the JsonWriter writes feed currently always as Version 2.0
-        version = ODataConstants.DATA_SERVICE_VERSION;
+        version = MediaType.valueOf(fw.getContentType()).isCompatible(MediaType.APPLICATION_JSON_TYPE)
+            ? ODataVersion.V2
+            : ODataVersion.V2;
       } else {
         throw new NotImplementedException("Unknown BaseResponse type: " + response.getClass().getName());
       }

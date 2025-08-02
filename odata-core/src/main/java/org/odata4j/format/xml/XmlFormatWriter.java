@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -60,7 +60,8 @@ public class XmlFormatWriter {
   }
 
   @SuppressWarnings("unchecked")
-  protected void writeProperty(XMLWriter2 writer, String name, EdmType type, Object value, boolean isDocumentElement, boolean writeType) {
+  protected void writeProperty(XMLWriter2 writer, String name, EdmType type, Object value, boolean isDocumentElement,
+      boolean writeType) {
 
     writer.startElement(new QName2(d, name, "d"));
 
@@ -284,7 +285,7 @@ public class XmlFormatWriter {
         // for requests we include only the provided links
         // Note: It seems that OLinks for responses are only built using the
         // title and OLinks for requests have the additional info in them
-        // alread.  I'm leaving that inconsistency in place for now but this
+        // alread. I'm leaving that inconsistency in place for now but this
         // else and its preceding if could probably be unified.
         for (OLink olink : entityLinks) {
           String type = olink.isCollection()
@@ -464,7 +465,16 @@ public class XmlFormatWriter {
       if (o instanceof OComplexObject) {
         writeProperty(writer, "element", o.getType(), o, false, false);
       } else if (o instanceof OSimpleObject) {
-        writeProperty(writer, "element", o.getType(), ((OSimpleObject) o).getValue(), false, false); // not a doc element and don't write the typename
+        writeProperty(writer, "element", o.getType(), ((OSimpleObject) o).getValue(), false, false); // not a doc
+                                                                                                     // element and
+                                                                                                     // don't write the
+                                                                                                     // typename
+      } else if (o instanceof OCollection) {
+        writer.startElement("d:element");
+        writer.writeAttribute("m:type",
+            "Collection(" + ((OCollection<?>) o).getType().getFullyQualifiedTypeName() + ")");
+        writeCollection(writer, "element", (OCollection<?>) o);
+        writer.endElement("d:element");
       } else {
         // TODO...
       }

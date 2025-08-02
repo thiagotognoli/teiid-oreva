@@ -2,14 +2,16 @@ package org.odata4j.producer.resources;
 
 import java.io.StringWriter;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.Providers;
 
 import org.odata4j.core.ODataConstants;
 import org.odata4j.core.OError;
@@ -24,8 +26,10 @@ import org.odata4j.producer.ODataProducer;
 import org.odata4j.producer.Responses;
 
 /**
- * Provider for correctly formatted server errors.  Every {@link RuntimeException} that
- * is not already an {@link ODataProducerException} is wrapped into a {@link ServerErrorException}
+ * Provider for correctly formatted server errors. Every
+ * {@link RuntimeException} that
+ * is not already an {@link ODataProducerException} is wrapped into a
+ * {@link ServerErrorException}
  * (resulting in an HTTP {@link Status#INTERNAL_SERVER_ERROR}).
  *
  * @see ErrorResponseExtension
@@ -34,7 +38,8 @@ import org.odata4j.producer.Responses;
 public class ExceptionMappingProvider implements ExceptionMapper<RuntimeException> {
 
   @Context
-  protected ContextResolver<ODataProducer> producerResolver;
+  protected Providers providers;
+
   @Context
   protected UriInfo uriInfo;
   @Context
@@ -47,10 +52,13 @@ public class ExceptionMappingProvider implements ExceptionMapper<RuntimeExceptio
     else
       exception = new ServerErrorException(e);
 
-    ErrorResponseExtension errorResponseExtension = producerResolver.getContext(ODataProducer.class).findExtension(ErrorResponseExtension.class);
-    boolean includeInnerError = errorResponseExtension != null && errorResponseExtension.returnInnerError(httpHeaders, uriInfo, exception);
+    ErrorResponseExtension errorResponseExtension = getODataProducer(providers)
+        .findExtension(ErrorResponseExtension.class);
+    boolean includeInnerError = errorResponseExtension != null
+        && errorResponseExtension.returnInnerError(httpHeaders, uriInfo, exception);
 
-    FormatWriter<ErrorResponse> fw = FormatWriterFactory.getFormatWriter(ErrorResponse.class, httpHeaders.getAcceptableMediaTypes(),
+    FormatWriter<ErrorResponse> fw = FormatWriterFactory.getFormatWriter(ErrorResponse.class,
+        httpHeaders.getAcceptableMediaTypes(),
         getFormatParameter(), getCallbackParameter());
     StringWriter sw = new StringWriter();
     fw.write(uriInfo, sw, getErrorResponse(exception, includeInnerError));
@@ -76,4 +84,11 @@ public class ExceptionMappingProvider implements ExceptionMapper<RuntimeExceptio
   private String getCallbackParameter() {
     return uriInfo.getQueryParameters().getFirst("$callback");
   }
+
+  static ODataProducer getODataProducer(Providers providers) {
+    ContextResolver<ODataProducer> producerResolver = providers.getContextResolver(ODataProducer.class,
+        MediaType.WILDCARD_TYPE);
+    return producerResolver.getContext(ODataProducer.class);
+  }
+
 }

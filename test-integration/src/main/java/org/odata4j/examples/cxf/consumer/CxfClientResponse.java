@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -51,15 +51,15 @@ public class CxfClientResponse implements ODataClientResponse {
     }
   }
 
-@Override
-public InputStream getEntityInputStream() {
-	// TODO Auto-generated method stub
-	return null;
-}
+  @Override
+  public InputStream getEntityInputStream() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-@Override
-public MediaType getMediaType() {
-	// TODO Auto-generated method stub
-	return null;
-}
+  @Override
+  public MediaType getMediaType() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.ws.rs.core.MediaType;
+
 import org.odata4j.core.ODataConstants;
 import org.odata4j.core.ODataVersion;
 import org.odata4j.core.OEntity;
@@ -100,9 +102,10 @@ public class JsonFeedFormatParser extends JsonFormatParser implements FormatPars
 
       Matcher m = ENTITY_SET_NAME.matcher(uri);
 
-      // Fix for NPE when  
+      // Fix for NPE when
       // 1. nested entity like /Categories(1)/Products(76) is requested and
-      // 2. entity with keys like /PointSetField(attribute='X (EASTING)',point_set_id=19)
+      // 2. entity with keys like /PointSetField(attribute='X
+      // (EASTING)',point_set_id=19)
 
       int count = 0;
       int index = 0;
@@ -113,9 +116,9 @@ public class JsonFeedFormatParser extends JsonFormatParser implements FormatPars
       if (count == 0)
         throw new RuntimeException("Unable to parse the entity-key from atom entry id: " + uri);
 
-      //key(s) is the last occurrence in the pattern match
+      // key(s) is the last occurrence in the pattern match
       return OEntityKey.parse(ConversionUtil.decodeString(uri.substring(index - 1)));
-      //   return OEntityKey.parse(uri.substring(uri.lastIndexOf('(')));
+      // return OEntityKey.parse(uri.substring(uri.lastIndexOf('(')));
     }
 
   }
@@ -140,7 +143,8 @@ public class JsonFeedFormatParser extends JsonFormatParser implements FormatPars
       if (!isSingleEntity && version.compareTo(ODataVersion.V1) > 0) {
         // {
         ensureStartObject(jsr.nextEvent());
-        // results only for collections, if it is single entity or property it won't be there
+        // results only for collections, if it is single entity or property it won't be
+        // there
         // "results" :
         event = jsr.nextEvent();
         // if it is start property, check if its results/__metada and then skip them

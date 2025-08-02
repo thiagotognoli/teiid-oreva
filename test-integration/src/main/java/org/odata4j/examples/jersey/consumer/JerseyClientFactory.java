@@ -1,17 +1,18 @@
 package org.odata4j.examples.jersey.consumer;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.config.ClientConfig;
+import jakarta.ws.rs.client.Client;
+import org.glassfish.jersey.client.ClientConfig;
 
 /**
- * Client-side extension mechanism - provides a Jersey {@link Client} implementation given a configuration.
+ * Client-side extension mechanism - provides a Jersey {@link Client}
+ * implementation given a configuration.
  */
 public interface JerseyClientFactory {
 
   /**
    * Creates a new Jersey client.
    *
-   * @param clientConfig  the Jersey client api configuration
+   * @param clientConfig the Jersey client api configuration
    */
   Client createClient(ClientConfig clientConfig);
 

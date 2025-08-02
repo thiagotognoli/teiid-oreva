@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
@@ -39,10 +39,12 @@ import org.odata4j.repack.org.apache.commons.codec.binary.Base64;
 /**
  * Write content to an output stream in JSON format.
  *
- * <p>This class is abstract because it delegates the strategy pattern of writing
+ * <p>
+ * This class is abstract because it delegates the strategy pattern of writing
  * actual content elements to its (various) subclasses.
  *
- * <p>Each element in the array to be written can be wrapped in a function call
+ * <p>
+ * Each element in the array to be written can be wrapped in a function call
  * on the JavaScript side by specifying the name of a function to call to the
  * constructor.
  *
@@ -56,7 +58,7 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
    * Creates a new JSON writer.
    *
    * @param jsonpCallback a function to call on the javascript side to act
-   * on the data provided in the content.
+   *                      on the data provided in the content.
    */
   public JsonFormatWriter(String jsonpCallback) {
     this.jsonpCallback = jsonpCallback;
@@ -66,8 +68,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
    * A strategy method to actually write content objects
    *
    * @param uriInfo the base URI that indicates where in the schema we are
-   * @param jw the JSON writer object
-   * @param target the content value to be written
+   * @param jw      the JSON writer object
+   * @param target  the content value to be written
    */
   abstract protected void writeContent(UriInfo uriInfo, JsonWriter jw, T target);
 
@@ -140,7 +142,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
       jw.writeRaw(InternalUtil.formatTimeForJson((LocalTime) pvalue));
     } else if (type.equals(EdmSimpleType.DATETIMEOFFSET)) {
       jw.writeRaw(InternalUtil.formatDateTimeOffsetForJson((DateTime) pvalue));
-    } else if (type instanceof EdmComplexType || (type instanceof EdmSimpleType && (!((EdmSimpleType<?>) type).isSimple()))) {
+    } else if (type instanceof EdmComplexType
+        || (type instanceof EdmSimpleType && (!((EdmSimpleType<?>) type).isSimple()))) {
       // the OComplexObject value type is not in use everywhere yet, fix TODO
       if (pvalue instanceof OComplexObject) {
         pvalue = ((OComplexObject) pvalue).getProperties();
@@ -172,17 +175,23 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
             jw.writeSeparator();
           }
           if (obj instanceof OComplexObject) {
-            writeComplexObject(jw, null, obj.getType().getFullyQualifiedTypeName(), ((OComplexObject) obj).getProperties());
+            writeComplexObject(jw, null, obj.getType().getFullyQualifiedTypeName(),
+                ((OComplexObject) obj).getProperties());
           } else if (obj instanceof OSimpleObject) {
             writeValue(jw, obj.getType(), ((OSimpleObject) obj).getValue());
+          } else if (obj instanceof OCollection) {
+            writeCollection(jw, type, (OCollection<?>) obj);
           }
-          //else if (obj instanceof OEntity) {
-          //  I think the FormatWriter sig is going to have to change:
-          //  2.  why does JSON write absolute uris (http://blah/blah) for every entity?  The Atom
-          //      equivalent parts have the relative uri in many places.  Hmmh, a JSON feed representation
-          //      doesn't carry the xml:base uri like in Atom...weird...protocol seems inconsistent.
-          //  this.writeOEntity(null, jw, null, null, isFirst);
-          //}
+          // else if (obj instanceof OEntity) {
+          // I think the FormatWriter sig is going to have to change:
+          // 2. why does JSON write absolute uris (http://blah/blah) for every entity? The
+          // Atom
+          // equivalent parts have the relative uri in many places. Hmmh, a JSON feed
+          // representation
+          // doesn't carry the xml:base uri like in Atom...weird...protocol seems
+          // inconsistent.
+          // this.writeOEntity(null, jw, null, null, isFirst);
+          // }
           // others for later: ORowType
         }
 
@@ -192,44 +201,50 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
     jw.endObject();
   }
 
-  // single complex type response looks like: 
-  // {"d":{"Address":{"__metadata":{"type":"ODataDemo.Address"},"Street":"NE 228th","City":"Sammamish","State":"WA","ZipCode":"98074","Country":"USA"}}}
-  
+  // single complex type response looks like:
+  // {"d":{"Address":{"__metadata":{"type":"ODataDemo.Address"},"Street":"NE
+  // 228th","City":"Sammamish","State":"WA","ZipCode":"98074","Country":"USA"}}}
+
   // from within a entity, it looks like for "Location":
   // {"__metadata":{"type":"Edm.GeographyPoint"},"type":"Point","coordinates":[-122.03547668457,47.6316604614258],"crs":{"type":"name","properties":{"name":"EPSG:4326"}}}
   /**
-   * Write a single complex type in ODATA VJSON format. it can be from an entity, or from an collection, it can also be
-   * a single complex type response. 
-   * for single complex type response, the complecObjectName should not be null, in other cases it should be null.
+   * Write a single complex type in ODATA VJSON format. it can be from an entity,
+   * or from an collection, it can also be
+   * a single complex type response.
+   * for single complex type response, the complecObjectName should not be null,
+   * in other cases it should be null.
+   * 
    * @param jw
-   * @param complexObjectName needed only if for single complex type resonse.
+   * @param complexObjectName      needed only if for single complex type resonse.
    * @param fullyQualifiedTypeName
    * @param props
    */
-  protected void writeComplexObject(JsonWriter jw, String complexObjectName, String fullyQualifiedTypeName, List<OProperty<?>> props) {
-    
+  protected void writeComplexObject(JsonWriter jw, String complexObjectName, String fullyQualifiedTypeName,
+      List<OProperty<?>> props) {
     jw.startObject();
     if (complexObjectName != null) {
       jw.writeName(complexObjectName);
       jw.startObject();
     }
-    
+
     {
-      /* Confused:  The live OData producers that have complex types (ebay, netflix)
-       * both write this __metadata object for each complex object.  I can't find
-       * this in the OData spec though...*/
-      
-      // we are writing VJSON, this metadata is part of it.
       /*
-      jw.writeName("__metadata");
-      jw.startObject();
-      {
-      jw.writeName("type");
-      jw.writeString(fullyQualifiedTypeName);
+       * Confused: The live OData producers that have complex types (ebay, netflix)
+       * both write this __metadata object for each complex object. I can't find
+       * this in the OData spec though...
+       * jw.writeName("__metadata");
+       * jw.startObject();
+       * {
+       * jw.writeName("type");
+       * jw.writeString(fullyQualifiedTypeName);
+       * }
+       * jw.endObject();
+       * jw.writeSeparator();
+       */
+      if (complexObjectName != null) {
+        jw.writeName(complexObjectName);
+        jw.startObject();
       }
-      jw.endObject();
-      jw.writeSeparator();
-      */
       writeOProperties(jw, props);
       if (complexObjectName != null) {
         jw.endObject();
@@ -244,8 +259,10 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
     {
       String baseUri = null;
 
-      // TODO: I'm keeping this pattern of writing the __metadata if we have a non-null type..it seems like we could still
-      //       write the uri even if we don't have a type.  Also, are there any scenarios where the entity type would be null?  Not sure.
+      // TODO: I'm keeping this pattern of writing the __metadata if we have a
+      // non-null type..it seems like we could still
+      // write the uri even if we don't have a type. Also, are there any scenarios
+      // where the entity type would be null? Not sure.
       if (isResponse && oe.getEntityType() != null) {
         baseUri = uriInfo != null ? uriInfo.getBaseUri().toString() : "";
 
@@ -259,7 +276,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
           jw.writeName("type");
           jw.writeString(oe.getEntityType().getFullyQualifiedTypeName());
           OAtomStreamEntity stream = oe.findExtension(OAtomStreamEntity.class);
-          // Adding additional metadata per Entry that describes the Media Resource (MR) associated with the Entry
+          // Adding additional metadata per Entry that describes the Media Resource (MR)
+          // associated with the Entry
           if (stream != null && ees.getType().getHasStream() != null && ees.getType().getHasStream()) {
             jw.writeSeparator();
             jw.writeName("media_src");
@@ -273,17 +291,17 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
           }
 
           // Exposed bound functions if any
-          if (oe != null){
+          if (oe != null) {
             OBindableEntity bindableEntity = oe.findExtension(OBindableEntity.class);
-            if (bindableEntity != null){
-              if (bindableEntity.getBindableActions().size() > 0){
+            if (bindableEntity != null) {
+              if (bindableEntity.getBindableActions().size() > 0) {
                 jw.writeSeparator();
                 jw.writeName("actions");
                 jw.startObject();
                 boolean first = true;
-                for (Map.Entry<String, EdmFunctionImport> entry : bindableEntity.getBindableActions().entrySet()){
-                  if (!first){
-                    jw.writeSeparator();           
+                for (Map.Entry<String, EdmFunctionImport> entry : bindableEntity.getBindableActions().entrySet()) {
+                  if (!first) {
+                    jw.writeSeparator();
                   } else {
                     first = false;
                   }
@@ -291,21 +309,21 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
                 }
                 jw.endObject();
               }
-              if (bindableEntity.getBindableFunctions().size() > 0){
+              if (bindableEntity.getBindableFunctions().size() > 0) {
                 jw.writeSeparator();
                 jw.writeName("functions");
                 jw.startObject();
                 boolean first = true;
-                for (Map.Entry<String, EdmFunctionImport> entry : bindableEntity.getBindableFunctions().entrySet()){
-                  if (!first){
+                for (Map.Entry<String, EdmFunctionImport> entry : bindableEntity.getBindableFunctions().entrySet()) {
+                  if (!first) {
                     jw.writeSeparator();
                   } else {
                     first = false;
                   }
                   writeFunction(jw, absId, entry.getKey(), entry.getValue());
                 }
-                jw.endObject();           
-              }   
+                jw.endObject();
+              }
             }
           }
         }
@@ -319,7 +337,7 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
     jw.endObject();
   }
 
-  protected void writeFunction(JsonWriter jw, String entityUri, String fqFunctionName, EdmFunctionImport function){
+  protected void writeFunction(JsonWriter jw, String entityUri, String fqFunctionName, EdmFunctionImport function) {
     jw.writeName(function.getName());
     jw.startArray();
     jw.startObject();
@@ -331,7 +349,7 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
     jw.endObject();
     jw.endArray();
   }
-  
+
   protected void writeLinks(JsonWriter jw, OEntity oe, UriInfo uriInfo, boolean isResponse) {
 
     if (oe.getLinks() != null) {
@@ -352,8 +370,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
       if (link.isCollection()) {
 
         // the version check will only make sense when this library properly
-        // supports version negotiation.  For now we write v2 only
-        if (true) { //  || ODataVersion.isVersionGreaterThan(settings.version, ODataVersion.V1)) {
+        // supports version negotiation. For now we write v2 only
+        if (true) { // || ODataVersion.isVersionGreaterThan(settings.version, ODataVersion.V1)) {
           jw.startObject();
           jw.writeName(JsonFormatParser.RESULTS_PROPERTY);
         }
@@ -391,8 +409,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
         }
       }
     } else if (link instanceof ONamedStreamLink) {
-      // this is like CD_ATTACHMENT('DWS39')/ATTACHMENT 
-      String relId = InternalUtil.getEntityRelId(oe)+"/"+link.getHref();
+      // this is like CD_ATTACHMENT('DWS39')/ATTACHMENT
+      String relId = InternalUtil.getEntityRelId(oe) + "/" + link.getHref();
       // write named stream link
       jw.startObject();
       {
@@ -401,21 +419,21 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
         {
           jw.writeName("edit_media");
           jw.writeString(relId);
-          
+
           jw.writeSeparator();
-          
+
           jw.writeName("media_src");
           jw.writeString(relId);
-          
+
           jw.writeSeparator();
-          
+
           jw.writeName("content-type");
           jw.writeString(link.getType());
         }
         jw.endObject();
       }
       jw.endObject();
-      
+
     } else {
       // deferred
       jw.startObject();

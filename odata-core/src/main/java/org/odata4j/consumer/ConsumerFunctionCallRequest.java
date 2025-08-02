@@ -12,6 +12,7 @@ import java.util.List;
 import org.core4j.Enumerable;
 import org.core4j.Func;
 import org.core4j.ReadOnlyIterator;
+import org.core4j.ReadOnlyIterator.IterationResult;
 import org.joda.time.LocalDateTime;
 import org.odata4j.core.Guid;
 import org.odata4j.core.OCollection;
@@ -54,7 +55,7 @@ public class ConsumerFunctionCallRequest<T extends OObject>
 
   private final List<OFunctionParameter> params = new LinkedList<OFunctionParameter>();
   private final String functionName;
-  
+
   private String boundEntitySetName;
   private OEntityKey boundEntityKey;
   private EdmFunctionImport function;
@@ -75,7 +76,7 @@ public class ConsumerFunctionCallRequest<T extends OObject>
     final ODataClientRequest request = buildFunctionRequest();
     Enumerable<OObject> results;
     if (function.getReturnType() == null) {
-      //doRequest(request);
+      // doRequest(request);
       getClient().callFunction(request);
       results = Enumerable.empty(null);
     } else if (function.getReturnType() instanceof EdmCollectionType) {
@@ -97,7 +98,7 @@ public class ConsumerFunctionCallRequest<T extends OObject>
     EdmType bindingType = null;
     if (boundEntitySetName != null) {
       EdmEntitySet entitySet = getMetadata().findEdmEntitySet(boundEntitySetName);
-      if (entitySet != null){
+      if (entitySet != null) {
         bindingType = entitySet.getType();
         if (boundEntityKey == null) {
           // The binding type is a collection as we don't have the entity key
@@ -107,13 +108,13 @@ public class ConsumerFunctionCallRequest<T extends OObject>
       List<EntitySegment> entitySegments = getSegments();
       entitySegments.add(0, new EntitySegment(boundEntitySetName, boundEntityKey));
     }
-    
+
     function = getMetadata().findEdmFunctionImport(functionName, bindingType);
     if (function == null) {
       throw new IllegalArgumentException("No function found matching your request");
     }
     if (function.getHttpMethod().equalsIgnoreCase(ODataHttpMethod.GET.name()) ||
-        function.getHttpMethod().equalsIgnoreCase(ODataHttpMethod.DELETE.name())){
+        function.getHttpMethod().equalsIgnoreCase(ODataHttpMethod.DELETE.name())) {
       // turn each param into a custom query option
       for (OFunctionParameter p : params)
         custom(p.getName(), toUriString(p));
@@ -122,7 +123,7 @@ public class ConsumerFunctionCallRequest<T extends OObject>
       ODataClientRequest request = buildRequest(null);
       request = request.method(function.getHttpMethod());
       request = request.payload(new Parameters() {
-        
+
         @Override
         public Collection<OFunctionParameter> getParameters() {
           return params;
@@ -131,7 +132,7 @@ public class ConsumerFunctionCallRequest<T extends OObject>
       return request;
     }
   }
-  
+
   private static String toUriString(OFunctionParameter p) {
     OObject obj = p.getValue();
     if (obj instanceof OSimpleObject) {
@@ -140,10 +141,11 @@ public class ConsumerFunctionCallRequest<T extends OObject>
       return Expression.asFilterString(le);
 
     } else if (obj instanceof OEntity) {
-      OEntity entity = (OEntity)obj;
+      OEntity entity = (OEntity) obj;
       OEntityKey key = entity.getEntityKey();
-      if (key == null){
-        throw new UnsupportedOperationException("Locally-built type not supported (No entity key): " + obj.getType().getFullyQualifiedTypeName());
+      if (key == null) {
+        throw new UnsupportedOperationException(
+            "Locally-built type not supported (No entity key): " + obj.getType().getFullyQualifiedTypeName());
       }
       return entity.getEntitySetName() + key.toKeyString();
     }
@@ -258,7 +260,25 @@ public class ConsumerFunctionCallRequest<T extends OObject>
   private OObject doRequest(ODataClientRequest request) throws ODataProducerException {
     ODataClientResponse response = getClient().callFunction(request);
 
-    return (OObject) getResult(response);
+    ODataVersion version = InternalUtil
+        .getDataServiceVersion(response.getHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
+
+    Class<? extends OObject> returnTypeClass = function.getReturnType().isSimple() ? OSimpleObject.class
+        : EdmType.getInstanceType(function.getReturnType());
+    FormatParser<? extends OObject> parser = FormatParserFactory.getParser(
+        returnTypeClass,
+        getClient().getFormatType(),
+        new Settings(
+            version,
+            getMetadata(),
+            function.getName(),
+            null, // entitykey
+            true, // isResponse
+            function.getReturnType()));
+
+    OObject object = parser.parse(getClient().getFeedReader(response));
+    response.close();
+    return object;
   }
 
   private class FunctionResultsIterator extends ReadOnlyIterator<OObject> {
@@ -300,7 +320,8 @@ public class ConsumerFunctionCallRequest<T extends OObject>
   }
 
   private Object getResult(ODataClientResponse response) {
-    ODataVersion version = InternalUtil.getDataServiceVersion(response.getHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
+    ODataVersion version = InternalUtil
+        .getDataServiceVersion(response.getHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
 
     Object object = getResult(version, getClient().getFeedReader(response), getClient().getFormatType());
 
@@ -311,22 +332,21 @@ public class ConsumerFunctionCallRequest<T extends OObject>
 
   private Object getResult(ODataVersion version, Reader reader, FormatType formatType) {
     if (function.getReturnType() == null) {
-     return null;
+      return null;
     }
 
-      FormatParser<? extends OObject> parser = FormatParserFactory.getParser(
-          function.getReturnType().isSimple() ? OSimpleObject.class : EdmType.getInstanceType(function.getReturnType()),
-          getClient().getFormatType(),
-          new Settings(version, 
-              getMetadata(), 
-              function.getEntitySet() != null ? function.getEntitySet().getName() : null, 
-              null, // entitykey
-              null, // fcMapping
-              true, // isResponse 
-              function.getReturnType(), 
-              function)
-          );
-	 		  
+    FormatParser<? extends OObject> parser = FormatParserFactory.getParser(
+        function.getReturnType().isSimple() ? OSimpleObject.class : EdmType.getInstanceType(function.getReturnType()),
+        getClient().getFormatType(),
+        new Settings(version,
+            getMetadata(),
+            function.getEntitySet() != null ? function.getEntitySet().getName() : null,
+            null, // entitykey
+            null, // fcMapping
+            true, // isResponse
+            function.getReturnType(),
+            function));
+
     OObject object = parser.parse(reader);
 
     return object;

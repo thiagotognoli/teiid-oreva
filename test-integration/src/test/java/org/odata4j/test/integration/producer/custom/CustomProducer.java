@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 
 import org.odata4j.core.OCollection.Builder;
 import org.odata4j.core.OCollections;
@@ -114,7 +114,8 @@ public class CustomProducer implements ODataProducer {
   }
 
   @Override
-  public CountResponse getNavPropertyCount(ODataContext context, String entitySetName, OEntityKey entityKey, String navProp, QueryInfo queryInfo) {
+  public CountResponse getNavPropertyCount(ODataContext context, String entitySetName, OEntityKey entityKey,
+      String navProp, QueryInfo queryInfo) {
     throw new NotImplementedException();
   }
 
@@ -210,30 +211,35 @@ public class CustomProducer implements ODataProducer {
     props.add(OProperties.string("Id", id));
 
     Builder<OObject> builder = OCollections.newBuilder(EdmSimpleType.STRING);
-    props.add(OProperties.collection("EmptyStrings", new EdmCollectionType(CollectionKind.Bag, EdmSimpleType.STRING), builder.build()));
+    props.add(OProperties.collection("EmptyStrings", new EdmCollectionType(CollectionKind.Bag, EdmSimpleType.STRING),
+        builder.build()));
 
     builder = OCollections.newBuilder(EdmSimpleType.STRING);
     for (int j = 0; j < 3; j++) {
       builder.add(OSimpleObjects.create(EdmSimpleType.STRING, "bagstring-" + j));
     }
-    props.add(OProperties.collection("BagOStrings", new EdmCollectionType(CollectionKind.Bag, EdmSimpleType.STRING), builder.build()));
+    props.add(OProperties.collection("BagOStrings", new EdmCollectionType(CollectionKind.Bag, EdmSimpleType.STRING),
+        builder.build()));
 
     builder = OCollections.newBuilder(EdmSimpleType.STRING);
     for (int j = 0; j < 5; j++) {
       builder.add(OSimpleObjects.create(EdmSimpleType.STRING, "liststring-" + j));
     }
-    props.add(OProperties.collection("ListOStrings", new EdmCollectionType(CollectionKind.List, EdmSimpleType.STRING), builder.build()));
+    props.add(OProperties.collection("ListOStrings", new EdmCollectionType(CollectionKind.List, EdmSimpleType.STRING),
+        builder.build()));
 
     builder = OCollections.newBuilder(EdmSimpleType.INT32);
     for (int j = 0; j < 5; j++) {
       builder.add(OSimpleObjects.create(EdmSimpleType.INT32, j));
     }
-    props.add(OProperties.collection("BagOInts", new EdmCollectionType(CollectionKind.List, EdmSimpleType.INT32), builder.build()));
+    props.add(OProperties.collection("BagOInts", new EdmCollectionType(CollectionKind.List, EdmSimpleType.INT32),
+        builder.build()));
 
     EdmComplexType ct1 = this.getMetadata().findEdmComplexType("myns.ComplexType1");
     OComplexObject.Builder cb = OComplexObjects.newBuilder(ct1);
     cb.add(OProperties.string("Prop1", "Val1")).add(OProperties.string("Prop2", "Val2"));
-    // hmmh, I swear I put a form of OProperties.complex that took an OComplexObject....
+    // hmmh, I swear I put a form of OProperties.complex that took an
+    // OComplexObject....
     props.add(OProperties.complex("Complex1", ct1, cb.build().getProperties()));
 
     builder = OCollections.newBuilder(ct1);
@@ -272,7 +278,8 @@ public class CustomProducer implements ODataProducer {
   }
 
   @Override
-  public EntityResponse getEntity(ODataContext context, String entitySetName, OEntityKey entityKey, EntityQueryInfo queryInfo) {
+  public EntityResponse getEntity(ODataContext context, String entitySetName, OEntityKey entityKey,
+      EntityQueryInfo queryInfo) {
     if (entitySetName.equals("Type1s")) {
       return Responses.entity(getType1(Integer.parseInt((String) entityKey.asSingleValue())));
     }
@@ -286,7 +293,8 @@ public class CustomProducer implements ODataProducer {
   }
 
   @Override
-  public BaseResponse getNavProperty(ODataContext context, String entitySetName, OEntityKey entityKey, String navProp, QueryInfo queryInfo) {
+  public BaseResponse getNavProperty(ODataContext context, String entitySetName, OEntityKey entityKey, String navProp,
+      QueryInfo queryInfo) {
     throw new NotImplementedException();
   }
 
@@ -306,7 +314,8 @@ public class CustomProducer implements ODataProducer {
   }
 
   @Override
-  public EntityResponse createEntity(ODataContext context, String entitySetName, OEntityKey entityKey, String navProp, OEntity entity) {
+  public EntityResponse createEntity(ODataContext context, String entitySetName, OEntityKey entityKey, String navProp,
+      OEntity entity) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -336,17 +345,20 @@ public class CustomProducer implements ODataProducer {
   }
 
   @Override
-  public void updateLink(ODataContext context, OEntityId sourceEntity, String targetNavProp, OEntityKey oldTargetEntityKey, OEntityId newTargetEntity) {
+  public void updateLink(ODataContext context, OEntityId sourceEntity, String targetNavProp,
+      OEntityKey oldTargetEntityKey, OEntityId newTargetEntity) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void deleteLink(ODataContext context, OEntityId sourceEntity, String targetNavProp, OEntityKey targetEntityKey) {
+  public void deleteLink(ODataContext context, OEntityId sourceEntity, String targetNavProp,
+      OEntityKey targetEntityKey) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public BaseResponse callFunction(ODataContext context, EdmFunctionImport name, Map<String, OFunctionParameter> params, QueryInfo queryInfo) {
+  public BaseResponse callFunction(ODataContext context, EdmFunctionImport name, Map<String, OFunctionParameter> params,
+      QueryInfo queryInfo) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -368,7 +380,7 @@ public class CustomProducer implements ODataProducer {
   protected OEntity getMLE(EdmEntitySet entitySet, String id, String content) {
     List<OProperty<?>> props = new ArrayList<OProperty<?>>();
     props.add(OProperties.string("MLEProp1", "content length is " + content.length()));
-    return OEntities.create(entitySet, OEntityKey.create("Id", id), props, Collections.<OLink> emptyList());
+    return OEntities.create(entitySet, OEntityKey.create("Id", id), props, Collections.<OLink>emptyList());
   }
 
   private class MediaLinkExtensionFactory implements OMediaLinkExtensions {
@@ -383,14 +395,15 @@ public class CustomProducer implements ODataProducer {
   private class MediaLinkExtension implements OMediaLinkExtension {
 
     @Override
-    public InputStream getInputStreamForMediaLinkEntry(ODataContext odataContext, OEntity mle, String etag, EntityQueryInfo query) {
+    public InputStream getInputStreamForMediaLinkEntry(ODataContext odataContext, OEntity mle, String etag,
+        EntityQueryInfo query) {
 
       if (null == odataContext) {
         throw new IllegalArgumentException("no odataContext?");
       }
 
       String id = mle.getEntityKey().asSingleValue().toString();
-      String content = mediaResources.get(id); //  "here we have some content for the mle with id: " +;
+      String content = mediaResources.get(id); // "here we have some content for the mle with id: " +;
       if (content == null) {
         throw new NotFoundException();
       }
@@ -407,7 +420,8 @@ public class CustomProducer implements ODataProducer {
     }
 
     @Override
-    public OutputStream getOutputStreamForMediaLinkEntryCreate(ODataContext odataContext, OEntity mle, String etag, QueryInfo query) {
+    public OutputStream getOutputStreamForMediaLinkEntryCreate(ODataContext odataContext, OEntity mle, String etag,
+        QueryInfo query) {
       if (null == odataContext) {
         throw new IllegalArgumentException("no odataContext?");
       }
@@ -421,7 +435,8 @@ public class CustomProducer implements ODataProducer {
     }
 
     @Override
-    public OutputStream getOutputStreamForMediaLinkEntryUpdate(ODataContext odataContext, OEntity mle, String etag, QueryInfo query) {
+    public OutputStream getOutputStreamForMediaLinkEntryUpdate(ODataContext odataContext, OEntity mle, String etag,
+        QueryInfo query) {
       if (null == odataContext) {
         throw new IllegalArgumentException("no odataContext?");
       }
@@ -434,7 +449,8 @@ public class CustomProducer implements ODataProducer {
     }
 
     @Override
-    public OEntity getMediaLinkEntryForUpdateOrDelete(ODataContext odataContext, EdmEntitySet entitySet, OEntityKey key, HttpHeaders httpHeaders) {
+    public OEntity getMediaLinkEntryForUpdateOrDelete(ODataContext odataContext, EdmEntitySet entitySet, OEntityKey key,
+        HttpHeaders httpHeaders) {
       if (null == odataContext) {
         throw new IllegalArgumentException("no odataContext?");
       }
@@ -497,7 +513,7 @@ public class CustomProducer implements ODataProducer {
       // slug is the id
       List<OProperty<?>> props = new ArrayList<OProperty<?>>();
       props.add(OProperties.string("MLEProp1", "prop1 initial value"));
-      return OEntities.create(entitySet, OEntityKey.create("Id", slugs.get(0)), props, Collections.<OLink> emptyList());
+      return OEntities.create(entitySet, OEntityKey.create("Id", slugs.get(0)), props, Collections.<OLink>emptyList());
     }
 
     @Override

@@ -42,7 +42,8 @@ public abstract class AbstractRuntimeTest {
       PropertyConfigurator.configure(p);
 
       // configure JUL
-      java.util.logging.LogManager.getLogManager().readConfiguration(AbstractRuntimeTest.class.getResourceAsStream("/logging.properties"));
+      java.util.logging.LogManager.getLogManager()
+          .readConfiguration(AbstractRuntimeTest.class.getResourceAsStream("/logging.properties"));
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }
@@ -75,7 +76,7 @@ public abstract class AbstractRuntimeTest {
 
   private final static String RUNTIME_ENVIRONMENT_PROPERTY = "org.odata4j.jaxrs.runtime";
 
-  protected enum RuntimeFacadeType {
+  public enum RuntimeFacadeType {
     JERSEY, CXF;
 
     public static RuntimeFacadeType fromString(String value) {
@@ -87,7 +88,8 @@ public abstract class AbstractRuntimeTest {
       } else if ("CXF".equals(value)) {
         st = CXF;
       } else {
-        throw new IllegalArgumentException("Wrong value for " + AbstractRuntimeTest.RUNTIME_ENVIRONMENT_PROPERTY + " = " + value + ". Allowed is [JERSEY|CXF]");
+        throw new IllegalArgumentException("Wrong value for " + AbstractRuntimeTest.RUNTIME_ENVIRONMENT_PROPERTY + " = "
+            + value + ". Allowed is [JERSEY|CXF]");
       }
 
       return st;
@@ -98,14 +100,14 @@ public abstract class AbstractRuntimeTest {
 
   public AbstractRuntimeTest(RuntimeFacadeType type) {
     switch (type) {
-    case JERSEY:
-      this.rtFacade = new JerseyRuntimeFacade();
-      break;
-    case CXF:
-      this.rtFacade = new CxfRuntimeFacade();
-      break;
-    default:
-      throw new RuntimeException("JAX-RS runtime type not supported: " + type);
+      case JERSEY:
+        this.rtFacade = new JerseyRuntimeFacade();
+        break;
+      case CXF:
+        this.rtFacade = new CxfRuntimeFacade();
+        break;
+      default:
+        throw new RuntimeException("JAX-RS runtime type not supported: " + type);
     }
     this.logRule();
     this.log("parameterized runtime facade", type.toString());
@@ -115,24 +117,24 @@ public abstract class AbstractRuntimeTest {
   public static List<Object[]> data() {
 
     /*
-       TODO Ideally the test suite runs twice using CXF and Jersey as runtime.
-       Unfortunately CXF has issues and throws errors if Jersey did run first. This
-       issues are addressed to CXF mailing list: users@cxf.apache.org
-
-       Intermediate wise the runtime is selected from environment variable. Allowed configurations:
-
-       org.odata4j.jaxrs.runtime = jersey
-       org.odata4j.jaxrs.runtime = cxf
-       org.odata4j.jaxrs.runtime = jersey, cxf // currently not supported by CXF
-
+     * TODO Ideally the test suite runs twice using CXF and Jersey as runtime.
+     * Unfortunately CXF has issues and throws errors if Jersey did run first. This
+     * issues are addressed to CXF mailing list: users@cxf.apache.org
+     * 
+     * Intermediate wise the runtime is selected from environment variable. Allowed
+     * configurations:
+     * 
+     * org.odata4j.jaxrs.runtime = jersey
+     * org.odata4j.jaxrs.runtime = cxf
+     * org.odata4j.jaxrs.runtime = jersey, cxf // currently not supported by CXF
+     * 
      */
 
     Object[][] a;
     String value = System.getProperty(AbstractRuntimeTest.RUNTIME_ENVIRONMENT_PROPERTY);
     if (value == null) {
       a = new Object[][] { { RuntimeFacadeType.JERSEY } }; // default
-    }
-    else {
+    } else {
       StringTokenizer strt = new StringTokenizer(value, " ,;", false);
       a = new Object[strt.countTokens()][1];
       for (int i = 0; strt.hasMoreTokens(); i++) {

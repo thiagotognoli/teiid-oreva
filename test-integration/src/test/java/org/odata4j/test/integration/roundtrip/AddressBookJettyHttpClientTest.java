@@ -6,7 +6,7 @@ import static org.odata4j.format.FormatType.JSONVERBOSE;
 
 import java.util.List;
 
-import org.eclipse.jetty.client.ContentExchange;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,23 +46,25 @@ public class AddressBookJettyHttpClientTest extends AbstractJettyHttpClientTest 
 
   @Test
   public void stringProperty() throws Exception {
-    ContentExchange exchange = sendRequest("Persons(1)/Name", format);
-    if (format.equals(JSONVERBOSE))
-      assertThat(exchange.getResponseContent(), containsString("\"Susan Summer\""));
+    ContentResponse response = sendRequest("Persons(1)/Name", format);
+    // if (format.equals(JSONVERBOSE))
+    if (format.equals(JSON))
+      assertThat(response.getContentAsString(), containsString("\"Susan Summer\""));
     else
-      assertThat(exchange.getResponseContent(), containsString(">Susan Summer<"));
+      assertThat(response.getContentAsString(), containsString(">Susan Summer<"));
   }
 
   @Test
   public void dateTimeProperty() throws Exception {
-    ContentExchange exchange = sendRequest("Persons(2)/BirthDay", format);
-    if (format.equals(JSONVERBOSE))
-      assertThat(exchange.getResponseContent(), containsString("\"\\/Date(-62121600000)\\/\""));
+    ContentResponse response = sendRequest("Persons(2)/BirthDay", format);
+    // if (format.equals(JSONVERBOSE))
+    if (format.equals(JSON))
+      assertThat(response.getContentAsString(), containsString("\"\\/Date(-62121600000)\\/\""));
     else
-      assertThat(exchange.getResponseContent(), containsString(">1968-01-13T00:00:00<"));
+      assertThat(response.getContentAsString(), containsString(">1968-01-13T00:00<"));
   }
 
-  private ContentExchange sendRequest(String requestUri, FormatType format) throws Exception {
+  private ContentResponse sendRequest(String requestUri, FormatType format) throws Exception {
     return sendRequest(BASE_URI + requestUri + (!requestUri.contains("?") ? "?" : "") + "$format=" + format);
   }
 }

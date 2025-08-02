@@ -3,13 +3,15 @@ package org.odata4j.producer.resources;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 /**
  * Abstract OData application.
  *
- * <p>Implementers should override the {@code getClasses} method, but call
- * {@code super.getClasses()} before adding container-specific resources and providers as
+ * <p>
+ * Implementers should override the {@code getClasses} method, but call
+ * {@code super.getClasses()} before adding container-specific resources and
+ * providers as
  * required.
  */
 public abstract class AbstractODataApplication extends Application {

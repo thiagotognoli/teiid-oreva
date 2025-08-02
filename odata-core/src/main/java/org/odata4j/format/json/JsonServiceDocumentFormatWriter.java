@@ -1,6 +1,6 @@
 package org.odata4j.format.json;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.odata4j.edm.EdmDataServices;
 import org.odata4j.edm.EdmEntitySet;
@@ -40,21 +40,23 @@ public class JsonServiceDocumentFormatWriter extends JsonFormatWriter<EdmDataSer
 }
 
 /*
-// jsonp
-callback({
-"d" : {
-"EntitySets": [
-"TitleAudioFormats", "TitleAwards", "Titles", "TitleScreenFormats", "Genres", "Languages", "People"
-]
-}
-});
-
-// json
-{
-"d" : {
-"EntitySets": [
-"TitleAudioFormats", "TitleAwards", "Titles", "TitleScreenFormats", "Genres", "Languages", "People"
-]
-}
-}
-*/
+ * // jsonp
+ * callback({
+ * "d" : {
+ * "EntitySets": [
+ * "TitleAudioFormats", "TitleAwards", "Titles", "TitleScreenFormats", "Genres",
+ * "Languages", "People"
+ * ]
+ * }
+ * });
+ * 
+ * // json
+ * {
+ * "d" : {
+ * "EntitySets": [
+ * "TitleAudioFormats", "TitleAwards", "Titles", "TitleScreenFormats", "Genres",
+ * "Languages", "People"
+ * ]
+ * }
+ * }
+ */

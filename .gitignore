@@ -12,6 +12,7 @@ target
 .settings
 .classpath
 .project
+**/bin/*
 # Package Files #
 *.jar
 *.war

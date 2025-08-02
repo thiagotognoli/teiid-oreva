@@ -1,6 +1,6 @@
 package org.odata4j.producer.server;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 import org.odata4j.producer.resources.AbstractODataApplication;
 import org.odata4j.producer.resources.DefaultODataApplication;
@@ -28,7 +28,7 @@ public interface ODataServer {
   /**
    * Sets the OData application.
    *
-   * @param odataApp  the OData application class
+   * @param odataApp the OData application class
    * @return this server
    * @see AbstractODataApplication
    * @see DefaultODataApplication
@@ -38,7 +38,7 @@ public interface ODataServer {
   /**
    * Sets the root application.
    *
-   * @param rootApp  the root application class
+   * @param rootApp the root application class
    * @return this server
    * @see RootApplication
    */

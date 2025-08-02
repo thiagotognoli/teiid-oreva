@@ -13,14 +13,18 @@ public class EdmTypeTest {
 
   @Test
   public void edmTypeTests() {
-    Assert.assertTrue(EdmType.getSimple("Edm.String").isSimple()); // keep this test first, or at least before EdmSimpleType is loaded
+    Assert.assertTrue(EdmType.getSimple("Edm.String").isSimple()); // keep this test first, or at least before
+                                                                   // EdmSimpleType is loaded
     Assert.assertTrue(EdmType.getSimple("My.Custom.Type") == null);
   }
-  
+
   @Test
-  public void edmCollectionTypes(){
-    Assert.assertTrue(EdmDataServices.newBuilder().resolveType("Collection(Edm.String)").build().equals(new EdmCollectionType(CollectionKind.Collection, EdmSimpleType.STRING)));
-    Assert.assertTrue(EdmDataServices.newBuilder().resolveType("Bag(Edm.String)").build().equals(new EdmCollectionType(CollectionKind.Bag, EdmSimpleType.STRING)));
-    Assert.assertTrue(EdmDataServices.newBuilder().resolveType("List(Edm.String)").build().equals(new EdmCollectionType(CollectionKind.List, EdmSimpleType.STRING)));
+  public void edmCollectionTypes() {
+    Assert.assertTrue(EdmDataServices.newBuilder().resolveType("Collection(Edm.String)").build()
+        .equals(new EdmCollectionType(CollectionKind.Collection, EdmSimpleType.STRING)));
+    Assert.assertTrue(EdmDataServices.newBuilder().resolveType("Bag(Edm.String)").build()
+        .equals(new EdmCollectionType(CollectionKind.Collection, EdmSimpleType.STRING)));
+    Assert.assertTrue(EdmDataServices.newBuilder().resolveType("List(Edm.String)").build()
+        .equals(new EdmCollectionType(CollectionKind.Collection, EdmSimpleType.STRING)));
   }
 }

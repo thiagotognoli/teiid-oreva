@@ -3,7 +3,7 @@ package org.odata4j.format;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.odata4j.edm.EdmDataServices;
 import org.odata4j.exceptions.NotImplementedException;
@@ -14,6 +14,7 @@ import org.odata4j.format.json.JsonErrorFormatWriter;
 import org.odata4j.format.json.JsonFeedFormatWriter;
 import org.odata4j.format.json.JsonParametersFormatWriter;
 import org.odata4j.format.json.JsonPropertyFormatWriter;
+import org.odata4j.format.json.JsonRawFormatWriter;
 import org.odata4j.format.json.JsonRequestEntryFormatWriter;
 import org.odata4j.format.json.JsonServiceDocumentFormatWriter;
 import org.odata4j.format.json.JsonSimpleFormatWriter;
@@ -37,6 +38,7 @@ import org.odata4j.format.xml.AtomComplexFormatWriter;
 import org.odata4j.format.xml.AtomEntryFormatWriter;
 import org.odata4j.format.xml.AtomErrorFormatWriter;
 import org.odata4j.format.xml.AtomFeedFormatWriter;
+import org.odata4j.format.xml.AtomRawFormatWriter;
 import org.odata4j.format.xml.AtomRequestEntryFormatWriter;
 import org.odata4j.format.xml.AtomServiceDocumentFormatWriter;
 import org.odata4j.format.xml.AtomSimpleFormatWriter;
@@ -49,6 +51,7 @@ import org.odata4j.producer.EntitiesResponse;
 import org.odata4j.producer.EntityResponse;
 import org.odata4j.producer.ErrorResponse;
 import org.odata4j.producer.PropertyResponse;
+import org.odata4j.producer.RawResponse;
 import org.odata4j.producer.SimpleResponse;
 
 public class FormatWriterFactory {
@@ -64,6 +67,8 @@ public class FormatWriterFactory {
     FormatWriter<PropertyResponse> getPropertyFormatWriter();
 
     FormatWriter<SimpleResponse> getSimpleFormatWriter();
+
+    FormatWriter<RawResponse> getRawFormatWriter();
 
     FormatWriter<Entry> getRequestEntryFormatWriter();
 
@@ -81,7 +86,8 @@ public class FormatWriterFactory {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> FormatWriter<T> getFormatWriter(Class<T> targetType, List<MediaType> acceptTypes, String format, String callback) {
+  public static <T> FormatWriter<T> getFormatWriter(Class<T> targetType, List<MediaType> acceptTypes, String format,
+      String callback) {
 
     FormatType type = null;
 
@@ -98,16 +104,13 @@ public class FormatWriterFactory {
           if (parameters.containsValue(OdataJsonLiteConstant.VERBOSE_VALUE)) {
             type = FormatType.JSONVERBOSE;
             break;
-          }
-          else if (parameters.containsValue(OdataJsonLiteConstant.METADATA_TYPE_FULLMETADATA)) {
+          } else if (parameters.containsValue(OdataJsonLiteConstant.METADATA_TYPE_FULLMETADATA)) {
             type = FormatType.JSONLITEFULLMETADATA;
             break;
-          }
-          else if (parameters.containsValue(OdataJsonLiteConstant.METADATA_TYPE_NOMETADATA)) {
+          } else if (parameters.containsValue(OdataJsonLiteConstant.METADATA_TYPE_NOMETADATA)) {
             type = FormatType.JSONLITENOMETADATA;
             break;
-          }
-          else {
+          } else {
             type = FormatType.JSON;
             break;
           }
@@ -124,19 +127,18 @@ public class FormatWriterFactory {
       if (type.equals(FormatType.ATOM))
         type = FormatType.JSONVERBOSE;
     }
-    // We will be treating json-lite as default format type which will return minimal metadata, $format=json or jsonlite 
-    // Also we are supporting json-verbose format which can be accessed using $format=jsonverbose or verbosejson
+    // We will be treating json-lite as default format type which will return
+    // minimal metadata, $format=json or jsonlite
+    // Also we are supporting json-verbose format which can be accessed using
+    // $format=jsonverbose or verbosejson
     FormatWriters formatWriters;
     if (type.equals(FormatType.JSON)) {
       formatWriters = new JsonLiteWriters(callback, OdataJsonLiteConstant.METADATA_TYPE_MINIMALMETADATA);
-    }
-    else if (type.equals(FormatType.JSONLITEFULLMETADATA)) {
+    } else if (type.equals(FormatType.JSONLITEFULLMETADATA)) {
       formatWriters = new JsonLiteWriters(callback, OdataJsonLiteConstant.METADATA_TYPE_FULLMETADATA);
-    }
-    else if (type.equals(FormatType.JSONLITENOMETADATA)) {
+    } else if (type.equals(FormatType.JSONLITENOMETADATA)) {
       formatWriters = new JsonLiteWriters(callback, OdataJsonLiteConstant.METADATA_TYPE_NOMETADATA);
-    }
-    else if (type.equals(FormatType.JSONVERBOSE)) {
+    } else if (type.equals(FormatType.JSONVERBOSE)) {
       formatWriters = new JsonVerboseWriters(callback);
     } else {
       formatWriters = new AtomWriters();
@@ -156,6 +158,9 @@ public class FormatWriterFactory {
 
     if (targetType.equals(SimpleResponse.class))
       return (FormatWriter<T>) formatWriters.getSimpleFormatWriter();
+
+    if (targetType.equals(RawResponse.class))
+      return (FormatWriter<T>) formatWriters.getRawFormatWriter();
 
     if (Entry.class.isAssignableFrom(targetType))
       return (FormatWriter<T>) formatWriters.getRequestEntryFormatWriter();
@@ -178,8 +183,8 @@ public class FormatWriterFactory {
     if (targetType.equals(Parameters.class))
       return (FormatWriter<T>) formatWriters.getRequestParametersFormatWriter();
 
-    throw new IllegalArgumentException("Unable to locate format writer for " + targetType.getName() + " and format " + type);
-
+    throw new IllegalArgumentException(
+        "Unable to locate format writer for " + targetType.getName() + " and format " + type);
   }
 
   public static class JsonVerboseWriters implements FormatWriters {
@@ -190,7 +195,7 @@ public class FormatWriterFactory {
       this.callback = callback;
     }
 
-    //TODO: check the metadata type and then provide appropriate writter
+    // TODO: check the metadata type and then provide appropriate writter
     @Override
     public FormatWriter<EdmDataServices> getServiceDocumentFormatWriter() {
       return new JsonServiceDocumentFormatWriter(callback);
@@ -214,6 +219,11 @@ public class FormatWriterFactory {
     @Override
     public FormatWriter<SimpleResponse> getSimpleFormatWriter() {
       return new JsonSimpleFormatWriter(callback);
+    }
+
+    @Override
+    public FormatWriter<RawResponse> getRawFormatWriter() {
+      return new JsonRawFormatWriter();
     }
 
     @Override
@@ -302,6 +312,11 @@ public class FormatWriterFactory {
     @Override
     public FormatWriter<SimpleResponse> getSimpleFormatWriter() {
       return new AtomSimpleFormatWriter();
+    }
+
+    @Override
+    public FormatWriter<RawResponse> getRawFormatWriter() {
+      return new AtomRawFormatWriter();
     }
 
     @Override
