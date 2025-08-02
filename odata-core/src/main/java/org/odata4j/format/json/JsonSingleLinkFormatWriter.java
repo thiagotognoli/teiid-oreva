@@ -1,6 +1,6 @@
 package org.odata4j.format.json;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.odata4j.format.SingleLink;
 
@@ -27,9 +27,9 @@ public class JsonSingleLinkFormatWriter extends JsonFormatWriter<SingleLink> {
 }
 
 /*
-{
-"d" : {
-"uri": "http://services.odata.org/northwind/Northwind.svc/Categories(1)"
-}
-}
-*/
+ * {
+ * "d" : {
+ * "uri": "http://services.odata.org/northwind/Northwind.svc/Categories(1)"
+ * }
+ * }
+ */

@@ -4,8 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
-import org.eclipse.jetty.client.ContentExchange;
-import org.eclipse.jetty.client.HttpExchange;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Test;
 import org.odata4j.producer.resources.DefaultODataProducerProvider;
@@ -13,9 +12,6 @@ import org.odata4j.test.integration.AbstractJettyHttpClientTest;
 import org.odata4j.test.integration.TestInMemoryProducers;
 
 public class SmokeTest extends AbstractJettyHttpClientTest {
-
-  private static final String META_DATA_URL = BASE_URI + "$metadata";
-  private static final String FEED_URL = BASE_URI + TestInMemoryProducers.SIMPLE_ENTITY_SET_NAME;
 
   public SmokeTest(RuntimeFacadeType type) {
     super(type);
@@ -28,28 +24,24 @@ public class SmokeTest extends AbstractJettyHttpClientTest {
 
   @Test
   public void serviceUrlReturnsOkStatus() throws Exception {
-    ContentExchange exchange = sendRequest(BASE_URI);
-    exchange.waitForDone();
-    verifyOkStatusIsReturned(exchange);
+    ContentResponse response = sendRequest(BASE_URI);
+    verifyOkStatusIsReturned(response);
   }
 
   @Test
   public void metaDataUrlReturnsOkStatus() throws Exception {
-    ContentExchange exchange = sendRequest(META_DATA_URL);
-    exchange.waitForDone();
-    verifyOkStatusIsReturned(exchange);
+    ContentResponse response = sendRequest(BASE_URI + "$metadata");
+    verifyOkStatusIsReturned(response);
   }
 
   @Test
   public void feedUrlReturnsOkStatus() throws Exception {
-    ContentExchange exchange = sendRequest(FEED_URL);
-    exchange.waitForDone();
-    verifyOkStatusIsReturned(exchange);
+    ContentResponse response = sendRequest(BASE_URI + TestInMemoryProducers.SIMPLE_ENTITY_SET_NAME);
+    verifyOkStatusIsReturned(response);
   }
 
-  private void verifyOkStatusIsReturned(ContentExchange exchange) throws Exception {
-    assertThat(exchange.getStatus(), is(HttpExchange.STATUS_COMPLETED));
-    assertThat(exchange.getResponseStatus(), is(HttpStatus.OK_200));
-    assertThat(exchange.getResponseContent().length(), greaterThan(0));
+  private void verifyOkStatusIsReturned(ContentResponse response) throws Exception {
+    assertThat(response.getStatus(), is(HttpStatus.OK_200));
+    assertThat(response.getContentAsString().length(), greaterThan(0));
   }
 }

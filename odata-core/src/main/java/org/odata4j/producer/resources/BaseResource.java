@@ -8,11 +8,11 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.ext.Providers;
 
 import org.odata4j.core.ODataConstants;
 import org.odata4j.core.ODataVersion;
@@ -34,26 +34,31 @@ import org.odata4j.producer.OMediaLinkExtensions;
 
 public abstract class BaseResource {
 
-  protected OEntity getRequestEntity(HttpHeaders httpHeaders, UriInfo uriInfo, String payload, EdmDataServices metadata, String entitySetName, OEntityKey entityKey) {
+  protected OEntity getRequestEntity(HttpHeaders httpHeaders, UriInfo uriInfo, String payload, EdmDataServices metadata,
+      String entitySetName, OEntityKey entityKey) {
     // TODO validation of MaxDataServiceVersion against DataServiceVersion
     // see spec [ms-odata] section 1.7
 
-    ODataVersion version = InternalUtil.getDataServiceVersion(httpHeaders.getRequestHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
+    ODataVersion version = InternalUtil
+        .getDataServiceVersion(httpHeaders.getRequestHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
     return convertFromString(payload, httpHeaders.getMediaType(), version, metadata, entitySetName, entityKey);
   }
 
-  private static OEntity convertFromString(String requestEntity, MediaType type, ODataVersion version, EdmDataServices metadata, String entitySetName, OEntityKey entityKey) throws NotAcceptableException {
+  private static OEntity convertFromString(String requestEntity, MediaType type, ODataVersion version,
+      EdmDataServices metadata, String entitySetName, OEntityKey entityKey) throws NotAcceptableException {
     FormatParser<Entry> parser = FormatParserFactory.getParser(Entry.class, type,
         new Settings(version, metadata, entitySetName, entityKey, false));
     Entry entry = parser.parse(new StringReader(requestEntity));
     return entry.getEntity();
   }
 
-  protected OEntity getRequestEntity(HttpHeaders httpHeaders, UriInfo uriInfo, InputStream payload, EdmDataServices metadata, String entitySetName, OEntityKey entityKey) throws UnsupportedEncodingException {
+  protected OEntity getRequestEntity(HttpHeaders httpHeaders, UriInfo uriInfo, InputStream payload,
+      EdmDataServices metadata, String entitySetName, OEntityKey entityKey) throws UnsupportedEncodingException {
     // TODO validation of MaxDataServiceVersion against DataServiceVersion
     // see spec [ms-odata] section 1.7
 
-    ODataVersion version = InternalUtil.getDataServiceVersion(httpHeaders.getRequestHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
+    ODataVersion version = InternalUtil
+        .getDataServiceVersion(httpHeaders.getRequestHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
     FormatParser<Entry> parser = FormatParserFactory.getParser(Entry.class, httpHeaders.getMediaType(),
         new Settings(version, metadata, entitySetName, entityKey, false));
 
@@ -69,7 +74,8 @@ public abstract class BaseResource {
   }
 
   // some helpers for media link entries
-  protected OMediaLinkExtension getMediaLinkExtension(HttpHeaders httpHeaders, UriInfo uriInfo, EdmEntitySet entitySet, ODataProducer producer,
+  protected OMediaLinkExtension getMediaLinkExtension(HttpHeaders httpHeaders, UriInfo uriInfo, EdmEntitySet entitySet,
+      ODataProducer producer,
       ODataContext context) {
 
     OMediaLinkExtensions mediaLinkExtensions = producer.findExtension(OMediaLinkExtensions.class);
@@ -87,7 +93,9 @@ public abstract class BaseResource {
 
     /*
      * this post has a great descriptions of the twists and turns of creating
-     * a media resource + media link entry:  http://blogs.msdn.com/b/astoriateam/archive/2010/08/04/data-services-streaming-provider-series-implementing-a-streaming-provider-part-1.aspx
+     * a media resource + media link entry:
+     * http://blogs.msdn.com/b/astoriateam/archive/2010/08/04/data-services-
+     * streaming-provider-series-implementing-a-streaming-provider-part-1.aspx
      */
 
     // first, the producer must support OMediaLinkExtension
@@ -100,7 +108,11 @@ public abstract class BaseResource {
 
     // now get a stream we can write the incoming bytes into.
     OutputStream outStream = key == null
-        ? mediaLinkExtension.getOutputStreamForMediaLinkEntryCreate(context, mle, null /*etag*/, null /*QueryInfo, may get rid of this */)
+        ? mediaLinkExtension.getOutputStreamForMediaLinkEntryCreate(context, mle, null /* etag */, null /*
+                                                                                                         * QueryInfo,
+                                                                                                         * may get rid
+                                                                                                         * of this
+                                                                                                         */)
         : mediaLinkExtension.getOutputStreamForMediaLinkEntryUpdate(context, mle, null, null);
 
     // write the stream
@@ -113,10 +125,11 @@ public abstract class BaseResource {
     // more info about the mle may be available now.
     return mediaLinkExtension.updateMediaLinkEntry(context, mle, outStream);
   }
-  
-	static ODataProducer getODataProducer(Providers providers) {
-		ContextResolver<ODataProducer> producerResolver = providers.getContextResolver(ODataProducer.class,MediaType.WILDCARD_TYPE);
-		return producerResolver.getContext(ODataProducer.class);
-	}
-  
+
+  static ODataProducer getODataProducer(Providers providers) {
+    ContextResolver<ODataProducer> producerResolver = providers.getContextResolver(ODataProducer.class,
+        MediaType.WILDCARD_TYPE);
+    return producerResolver.getContext(ODataProducer.class);
+  }
+
 }

@@ -1,10 +1,10 @@
 package org.odata4j.examples.jersey.consumer;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.odata4j.consumer.ODataClientResponse;
 
-import com.sun.jersey.api.client.ClientResponse;
+import org.glassfish.jersey.client.ClientResponse;
 
 public class JerseyClientResponse implements ODataClientResponse {
 
@@ -24,5 +24,7 @@ public class JerseyClientResponse implements ODataClientResponse {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+  }
+
 }

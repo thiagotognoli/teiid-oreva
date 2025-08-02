@@ -1,6 +1,6 @@
 package org.odata4j.format.json;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.odata4j.producer.ComplexObjectResponse;
 
@@ -15,7 +15,8 @@ public class JsonComplexObjectFormatWriter extends JsonFormatWriter<ComplexObjec
 
   @Override
   protected void writeContent(UriInfo uriInfo, JsonWriter jw, ComplexObjectResponse target) {
-    super.writeComplexObject(jw, target.getComplexObjectName(), target.getObject().getType().getFullyQualifiedTypeName(), target.getObject().getProperties());
+    super.writeComplexObject(jw, target.getComplexObjectName(),
+        target.getObject().getType().getFullyQualifiedTypeName(), target.getObject().getProperties());
   }
 
 }

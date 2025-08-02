@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,9 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
-import org.eclipse.jetty.client.ContentExchange;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -96,7 +98,7 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testGetEntities() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories", myHeaders);
 
     verify(producer).getEntities(context.capture(), eq("Directories"), any(QueryInfo.class));
 
@@ -106,7 +108,7 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testGetEntitiesCount() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories/$count", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories/$count", myHeaders);
 
     verify(producer).getEntitiesCount(context.capture(), eq("Directories"), any(QueryInfo.class));
 
@@ -116,7 +118,7 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testGetEntity() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')", myHeaders);
 
     verify(producer).getEntity(context.capture(), eq("Directories"), any(OEntityKey.class), any(EntityQueryInfo.class));
 
@@ -126,9 +128,10 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testGetNavProperty() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/Files", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/Files", myHeaders);
 
-    verify(producer).getNavProperty(context.capture(), eq("Directories"), any(OEntityKey.class), eq("Files"), any(QueryInfo.class));
+    verify(producer).getNavProperty(context.capture(), eq("Directories"), any(OEntityKey.class), eq("Files"),
+        any(QueryInfo.class));
 
     assertContext();
   }
@@ -136,9 +139,10 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testGetNavPropertyCount() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/Files/$count", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/Files/$count", myHeaders);
 
-    verify(producer).getNavPropertyCount(context.capture(), eq("Directories"), any(OEntityKey.class), eq("Files"), any(QueryInfo.class));
+    verify(producer).getNavPropertyCount(context.capture(), eq("Directories"), any(OEntityKey.class), eq("Files"),
+        any(QueryInfo.class));
 
     assertContext();
   }
@@ -146,7 +150,8 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testCreateEntity() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories", myHeaders, "POST", "{ \"Name\" : \"NewDir\" }");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories", myHeaders, "POST",
+        "{ \"Name\" : \"NewDir\" }");
 
     verify(producer).createEntity(context.capture(), eq("Directories"), any(OEntity.class));
 
@@ -156,9 +161,11 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testCreateRelatedEntity() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')/Items", myHeaders, "POST", "{ \"Name\" : \"NewFile\" }");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')/Items", myHeaders, "POST",
+        "{ \"Name\" : \"NewFile\" }");
 
-    verify(producer).createEntity(context.capture(), eq("Directories"), any(OEntityKey.class), eq("Items"), any(OEntity.class));
+    verify(producer).createEntity(context.capture(), eq("Directories"), any(OEntityKey.class), eq("Items"),
+        any(OEntity.class));
 
     assertContext();
   }
@@ -166,7 +173,7 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testDeleteEntity() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')", myHeaders, "DELETE", "");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')", myHeaders, "DELETE", "");
 
     verify(producer).deleteEntity(context.capture(), eq("Directories"), any(OEntityKey.class));
 
@@ -178,7 +185,8 @@ public class ContextTest extends AbstractJettyHttpClientTest {
 
     Map<String, List<String>> headers = getHeaders();
     headers.put(Headers.X_HTTP_METHOD, Collections.singletonList("MERGE"));
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')", headers, "POST", "{ \"DirProp1\" : \"prop1value\" }");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')", headers, "POST",
+        "{ \"DirProp1\" : \"prop1value\" }");
 
     verify(producer).mergeEntity(context.capture(), eq("Directories"), any(OEntity.class));
 
@@ -189,7 +197,8 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   public void testUpdateEntity() throws IOException, Exception {
 
     Map<String, List<String>> headers = getHeaders();
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')", headers, "PUT", "{ \"DirProp1\" : \"prop1value\" }");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('MyDir')", headers, "PUT",
+        "{ \"DirProp1\" : \"prop1value\" }");
 
     verify(producer).updateEntity(context.capture(), eq("Directories"), any(OEntity.class));
 
@@ -199,7 +208,7 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testGetLinks() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders);
 
     verify(producer).getLinks(context.capture(), any(OEntityId.class), eq("Files"));
 
@@ -209,7 +218,8 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testCreateLink() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders, "POST", "{\"uri\": \"http://host/service.svc/Files('myfile')\"}");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders, "POST",
+        "{\"uri\": \"http://host/service.svc/Files('myfile')\"}");
 
     verify(producer).createLink(context.capture(), any(OEntityId.class), eq("Files"), any(OEntityId.class));
 
@@ -219,9 +229,11 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testUpdateLink() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders, "PUT", "{\"uri\": \"http://host/service.svc/Files('myfile2')\"}");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders, "PUT",
+        "{\"uri\": \"http://host/service.svc/Files('myfile2')\"}");
 
-    verify(producer).updateLink(context.capture(), any(OEntityId.class), eq("Files"), any(OEntityKey.class), any(OEntityId.class));
+    verify(producer).updateLink(context.capture(), any(OEntityId.class), eq("Files"), any(OEntityKey.class),
+        any(OEntityId.class));
 
     assertContext();
   }
@@ -229,7 +241,8 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testDeleteLink() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders, "DELETE", "{\"uri\": \"http://host/service.svc/Files('myfile2')\"}");
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "Directories('Dir-0')/$links/Files", myHeaders,
+        "DELETE", "{\"uri\": \"http://host/service.svc/Files('myfile2')\"}");
 
     verify(producer).deleteLink(context.capture(), any(OEntityId.class), eq("Files"), any(OEntityKey.class));
 
@@ -239,9 +252,10 @@ public class ContextTest extends AbstractJettyHttpClientTest {
   @Test
   public void testCallFunction() throws IOException, Exception {
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "f?p='foo'", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "f?p='foo'", myHeaders);
 
-    verify(producer).callFunction(context.capture(), any(EdmFunctionImport.class), any(Map.class), any(QueryInfo.class));
+    verify(producer).callFunction(context.capture(), any(EdmFunctionImport.class), any(Map.class),
+        any(QueryInfo.class));
 
     assertContext();
   }
@@ -251,7 +265,7 @@ public class ContextTest extends AbstractJettyHttpClientTest {
 
     producer.extensionFactory = mock(OMediaLinkExtensions.class);
 
-    ContentExchange exchange = sendRequestWithHeaders(BASE_URI + "MLEs('foobar')/$value", myHeaders);
+    ContentResponse response = sendRequestWithHeaders(BASE_URI + "MLEs('foobar')/$value", myHeaders);
 
     verify(producer).findExtension(OMediaLinkExtensions.class);
     verify(producer.extensionFactory).create(context.capture());
@@ -264,7 +278,8 @@ public class ContextTest extends AbstractJettyHttpClientTest {
 
   private void assertContext(Map<String, List<String>> headers) {
 
-    // first: did all of the headers we sent make it into the producer via ODataContext?
+    // first: did all of the headers we sent make it into the producer via
+    // ODataContext?
     assertHeaders(headers);
 
     // next: did the SecurityContext make it into the producer via ODataContext?
@@ -293,29 +308,32 @@ public class ContextTest extends AbstractJettyHttpClientTest {
     }
   }
 
-  private ContentExchange sendRequestWithHeaders(String url, Map<String, List<String>> headers) throws IOException, InterruptedException {
+  private ContentResponse sendRequestWithHeaders(String url, Map<String, List<String>> headers)
+      throws Exception {
     return sendRequestWithHeaders(url, headers, null, null);
   }
 
-  private ContentExchange sendRequestWithHeaders(String url, Map<String, List<String>> headers, String method, String payload) throws IOException, InterruptedException {
-    ContentExchange exchange = new ContentExchange(true);
-    exchange.setURL(url);
-    if (null != method) {
-      exchange.setMethod(method);
+  private ContentResponse sendRequestWithHeaders(String url, Map<String, List<String>> headers, String method,
+      String payload) throws Exception {
+
+    Request request = client.newRequest(url);
+
+    if (method != null) {
+      request.method(HttpMethod.fromString(method));
     }
-    if (null != payload) {
-      exchange.setRequestContentSource(new ByteArrayInputStream(payload.getBytes()));
+
+    if (payload != null) {
+      request.content(new StringContentProvider(payload), "application/json");
     }
 
     for (Entry<String, List<String>> e : headers.entrySet()) {
       for (String val : e.getValue()) {
-        exchange.addRequestHeader(e.getKey(), val);
+        request.header(e.getKey(), val);
       }
     }
 
-    client.send(exchange);
-    exchange.waitForDone();
-    return exchange;
+    ContentResponse response = request.send();
+    return response;
   }
 
 }

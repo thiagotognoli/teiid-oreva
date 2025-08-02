@@ -2,15 +2,15 @@ package org.odata4j.producer.resources;
 
 import java.io.InputStream;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.Providers;
 
 import org.odata4j.core.OEntityKey;
 import org.odata4j.edm.EdmEntitySet;
@@ -58,19 +58,23 @@ public class ValueRequestResource extends BaseResource {
     throw new NotFoundException();
   }
 
-  protected Response getStreamResponse(HttpHeaders httpHeaders, UriInfo uriInfo, ODataProducer producer, EdmEntitySet entitySet, String entityId, EntityQueryInfo queryInfo,
+  protected Response getStreamResponse(HttpHeaders httpHeaders, UriInfo uriInfo, ODataProducer producer,
+      EdmEntitySet entitySet, String entityId, EntityQueryInfo queryInfo,
       SecurityContext securityContext, ODataContext odataContext) {
 
-    OMediaLinkExtension mediaLinkExtension = this.getMediaLinkExtension(httpHeaders, uriInfo, entitySet, producer, odataContext);
+    OMediaLinkExtension mediaLinkExtension = this.getMediaLinkExtension(httpHeaders, uriInfo, entitySet, producer,
+        odataContext);
 
     if (mediaLinkExtension == null)
       throw new NotImplementedException();
 
     EntityResponse entityResponse = producer.getEntity(odataContext,
         entitySet.getName(), OEntityKey.parse(entityId), queryInfo);
-    InputStream entityStream = mediaLinkExtension.getInputStreamForMediaLinkEntry(odataContext, entityResponse.getEntity(), null, queryInfo);
+    InputStream entityStream = mediaLinkExtension.getInputStreamForMediaLinkEntry(odataContext,
+        entityResponse.getEntity(), null, queryInfo);
     String contentType = mediaLinkExtension.getMediaLinkContentType(odataContext, entityResponse.getEntity());
-    String contentDisposition = mediaLinkExtension.getMediaLinkContentDisposition(odataContext, entityResponse.getEntity());
+    String contentDisposition = mediaLinkExtension.getMediaLinkContentDisposition(odataContext,
+        entityResponse.getEntity());
     return Response.ok(entityStream, contentType).header("Content-Disposition", contentDisposition).build();
   }
 

@@ -3,8 +3,8 @@ package org.odata4j.producer.resources;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.ext.Provider;
 
 import org.odata4j.core.Throwables;
 import org.odata4j.producer.ODataProducer;
@@ -13,13 +13,20 @@ import org.odata4j.producer.ODataProducerFactory;
 /**
  * Default OData producer provider.
  *
- * <p>OData producer instances can either be set statically (method {@code setInstance})
- * or created by a factory ({@link ODataProducerFactory}) specified by the corresponding
+ * <p>
+ * OData producer instances can either be set statically (method
+ * {@code setInstance})
+ * or created by a factory ({@link ODataProducerFactory}) specified by the
+ * corresponding
  * system property (constant {@code FACTORY_PROPNAME}).
  *
- * <p>To introduce an additional container-specific setting, it is required to extend
- * this class and override method {@code createInstanceFromFactoryInContainerSpecificSetting}.
- * Furthermore a subclass of {@link AbstractODataApplication} has to be created to make
+ * <p>
+ * To introduce an additional container-specific setting, it is required to
+ * extend
+ * this class and override method
+ * {@code createInstanceFromFactoryInContainerSpecificSetting}.
+ * Furthermore a subclass of {@link AbstractODataApplication} has to be created
+ * to make
  * the new provider available to the JAX-RS runtime.
  */
 @Provider
@@ -35,7 +42,7 @@ public class DefaultODataProducerProvider implements ContextResolver<ODataProduc
   /**
    * Sets the given OData producer as a static singleton.
    *
-   * @param producer  the OData producer
+   * @param producer the OData producer
    */
   public static void setInstance(ODataProducer producer) {
     STATIC = producer;
@@ -64,7 +71,10 @@ public class DefaultODataProducerProvider implements ContextResolver<ODataProduc
     if (instance == null)
       instance = createInstanceFromFactoryInSystemProperties();
     if (instance == null)
-      throw new RuntimeException("Unable to find an OData producer implementation. Call ODataProducerProvider.setInstance to set the static singleton or set the producer factory property \'" + FACTORY_PROPNAME + "\' in either the system properties or a container-specifc manner to a class name that implements ODataProducerFactory.");
+      throw new RuntimeException(
+          "Unable to find an OData producer implementation. Call ODataProducerProvider.setInstance to set the static singleton or set the producer factory property \'"
+              + FACTORY_PROPNAME
+              + "\' in either the system properties or a container-specifc manner to a class name that implements ODataProducerFactory.");
   }
 
   private ODataProducer setInstanceToStaticSingleton() {
@@ -76,13 +86,17 @@ public class DefaultODataProducerProvider implements ContextResolver<ODataProduc
   }
 
   /**
-   * Creates an OData producer instance using a factory specified in a container-specific
+   * Creates an OData producer instance using a factory specified in a
+   * container-specific
    * setting.
    *
-   * <p>The default implementation returns {@code null}. Implementers can use the helper
+   * <p>
+   * The default implementation returns {@code null}. Implementers can use the
+   * helper
    * methods {@code newProducerFromFactory} and {@code log}.
    *
-   * @return the OData producer or {@code null} if no container-specific setting exists
+   * @return the OData producer or {@code null} if no container-specific setting
+   *         exists
    */
   protected ODataProducer createInstanceFromFactoryInContainerSpecificSetting() {
     return null;
@@ -98,11 +112,12 @@ public class DefaultODataProducerProvider implements ContextResolver<ODataProduc
   }
 
   /**
-   * Helper method to create an OData producer instance from a given producer factory
+   * Helper method to create an OData producer instance from a given producer
+   * factory
    * ({@link ODataProducerFactory}).
    *
-   * @param factoryTypeName  the factory's type name (fully qualified)
-   * @param props  the properties to use when constructing the producer
+   * @param factoryTypeName the factory's type name (fully qualified)
+   * @param props           the properties to use when constructing the producer
    * @return the new producer
    */
   protected final ODataProducer newProducerFromFactory(String factoryTypeName, Properties props) {
@@ -119,7 +134,7 @@ public class DefaultODataProducerProvider implements ContextResolver<ODataProduc
   /**
    * Helper method to log an INFO message.
    *
-   * @param msg  the log message
+   * @param msg the log message
    */
   protected final void log(String msg) {
     log.info(msg);

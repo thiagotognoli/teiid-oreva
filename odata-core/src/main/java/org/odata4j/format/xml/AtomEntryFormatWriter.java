@@ -2,7 +2,7 @@ package org.odata4j.format.xml;
 
 import java.io.Writer;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -61,7 +61,8 @@ public class AtomEntryFormatWriter extends XmlFormatWriter implements FormatWrit
     writer.writeNamespace("d", d);
     writer.writeAttribute("xml:base", baseUri);
 
-    writeEntry(writer, target.getEntity(), target.getEntity().getProperties(), target.getEntity().getLinks(), baseUri, updated, ees, true);
+    writeEntry(writer, target.getEntity(), target.getEntity().getProperties(), target.getEntity().getLinks(), baseUri,
+        updated, ees, true);
     writer.endDocument();
   }
 

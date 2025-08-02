@@ -1,6 +1,6 @@
 package org.odata4j.examples.cxf.consumer;
 
-import javax.ws.rs.ext.RuntimeDelegate;
+import jakarta.ws.rs.ext.RuntimeDelegate;
 
 import org.odata4j.consumer.AbstractODataConsumer;
 import org.odata4j.consumer.ODataClient;
@@ -8,10 +8,16 @@ import org.odata4j.consumer.ODataConsumer;
 import org.odata4j.consumer.behaviors.OClientBehavior;
 import org.odata4j.format.FormatType;
 
+import org.glassfish.jersey.internal.AbstractRuntimeDelegate;
+import org.glassfish.jersey.internal.RuntimeDelegateImpl;
+
 /**
  * <code>ODataConsumer</code> is the client-side interface to an OData service.
  *
- * <p>Use {@link #create(String)} or one of the other static factory methods to connect to an existing OData service.</p>
+ * <p>
+ * Use {@link #create(String)} or one of the other static factory methods to
+ * connect to an existing OData service.
+ * </p>
  */
 public class ODataCxfConsumer extends AbstractODataConsumer {
 
@@ -21,8 +27,8 @@ public class ODataCxfConsumer extends AbstractODataConsumer {
     super(serviceRootUri);
 
     // ensure that the correct JAX-RS implementation (CXF) is loaded
-    if (!(RuntimeDelegate.getInstance() instanceof org.apache.cxf.jaxrs.impl.RuntimeDelegateImpl))
-      RuntimeDelegate.setInstance(new org.apache.cxf.jaxrs.impl.RuntimeDelegateImpl());
+    if (!(RuntimeDelegate.getInstance() instanceof AbstractRuntimeDelegate))
+      RuntimeDelegate.setInstance(new RuntimeDelegateImpl());
 
     this.client = new ODataCxfClient(type, behaviors);
   }
@@ -46,7 +52,7 @@ public class ODataCxfConsumer extends AbstractODataConsumer {
     /**
      * Sets a preferred {@link FormatType}. Defaults to {@code FormatType.ATOM}.
      *
-     * @param formatType  the format type
+     * @param formatType the format type
      * @return this builder
      */
     public Builder setFormatType(FormatType formatType) {
@@ -57,9 +63,11 @@ public class ODataCxfConsumer extends AbstractODataConsumer {
     /**
      * Sets one or more client behaviors.
      *
-     * <p>Client behaviors transform http requests to interact with services that require custom extensions.
+     * <p>
+     * Client behaviors transform http requests to interact with services that
+     * require custom extensions.
      *
-     * @param clientBehaviors  the client behaviors
+     * @param clientBehaviors the client behaviors
      * @return this builder
      */
     public Builder setClientBehaviors(OClientBehavior... clientBehaviors) {
@@ -84,7 +92,7 @@ public class ODataCxfConsumer extends AbstractODataConsumer {
   /**
    * Constructs a new builder for an {@link ODataCxfConsumer} object.
    *
-   * @param serviceRootUri  the OData service root uri
+   * @param serviceRootUri the OData service root uri
    */
   public static Builder newBuilder(String serviceRootUri) {
     return new Builder(serviceRootUri);
@@ -93,9 +101,14 @@ public class ODataCxfConsumer extends AbstractODataConsumer {
   /**
    * Creates a new consumer for the given OData service uri.
    *
-   * <p>Wrapper for {@code ODataCxfConsumer.newBuilder(serviceRootUri).build()}.
+   * <p>
+   * Wrapper for {@code ODataCxfConsumer.newBuilder(serviceRootUri).build()}.
    *
-   * @param serviceRootUri  the service uri <p>e.g. <code>http://services.odata.org/Northwind/Northwind.svc/</code></p>
+   * @param serviceRootUri the service uri
+   *                       <p>
+   *                       e.g.
+   *                       <code>http://services.odata.org/Northwind/Northwind.svc/</code>
+   *                       </p>
    * @return a new OData consumer
    */
   public static ODataCxfConsumer create(String serviceRootUri) {

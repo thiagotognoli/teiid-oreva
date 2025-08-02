@@ -27,9 +27,11 @@ public class Issue16Test extends AbstractJettyHttpClientTest {
   protected void registerODataProducer() throws Exception {
     InMemoryProducer producer = new InMemoryProducer("Issue16") {
       @Override
-      public EntitiesResponse getNavProperty(ODataContext context, String entitySetName, OEntityKey entityKey, String navProp, QueryInfo queryInfo) {
+      public EntitiesResponse getNavProperty(ODataContext context, String entitySetName, OEntityKey entityKey,
+          String navProp, QueryInfo queryInfo) {
         actualNavProp[0] = navProp;
-        return Responses.entities(Enumerable.<OEntity> create().toList(), EdmEntitySet.newBuilder().setName("messageLog").build(), null, null);
+        return Responses.entities(Enumerable.<OEntity>create().toList(),
+            EdmEntitySet.newBuilder().setName("messageLog").build(), null, null);
       }
     };
 
@@ -38,7 +40,7 @@ public class Issue16Test extends AbstractJettyHttpClientTest {
 
   @Test
   public void issue16() throws Exception {
-    sendRequest(BASE_URI + "Message(124L)/messageLog()").waitForDone();
+    sendRequest(BASE_URI + "Message(124L)/messageLog()");
 
     Assert.assertNotNull(actualNavProp[0]);
     Assert.assertEquals("messageLog", actualNavProp[0]);

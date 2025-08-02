@@ -1,6 +1,6 @@
 package org.odata4j.consumer;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 /**
  * Generic OData http response used by the low-level {@link ODataClient} api.

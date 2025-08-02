@@ -1,6 +1,6 @@
 package org.odata4j.format.json;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.odata4j.producer.PropertyResponse;
 
@@ -22,10 +22,10 @@ public class JsonPropertyFormatWriter extends JsonFormatWriter<PropertyResponse>
 }
 
 /*
-// property
-{
-"d" : {
-"CategoryName": "Beverages"
-}
-}
-*/
+ * // property
+ * {
+ * "d" : {
+ * "CategoryName": "Beverages"
+ * }
+ * }
+ */

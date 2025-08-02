@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -105,12 +105,14 @@ public class CxfRuntimeFacade implements RuntimeFacade {
     return this.getResource(ODataHttpMethod.GET, uri, null, null, null);
   }
 
-  private ResponseData getResource(ODataHttpMethod method, String uri, InputStream content, MediaType mediaType, Map<String, Object> headers) {
+  private ResponseData getResource(ODataHttpMethod method, String uri, InputStream content, MediaType mediaType,
+      Map<String, Object> headers) {
     String resource = "";
     try {
       HttpClient httpClient = new DefaultHttpClient();
 
-      if (System.getProperties().containsKey("http.proxyHost") && System.getProperties().containsKey("http.proxyPort")) {
+      if (System.getProperties().containsKey("http.proxyHost")
+          && System.getProperties().containsKey("http.proxyPort")) {
         // support proxy settings
         String hostName = System.getProperties().getProperty("http.proxyHost");
         String hostPort = System.getProperties().getProperty("http.proxyPort");
@@ -122,40 +124,40 @@ public class CxfRuntimeFacade implements RuntimeFacade {
       HttpUriRequest httpRequest;
 
       switch (method) {
-      case GET:
-        httpRequest = new HttpGet(uri);
-        break;
-      case DELETE:
-        httpRequest = new HttpDelete(uri);
-        break;
-      case PATCH:
-        HttpPost patch = new HttpPost(uri);
-        if (content != null)
-          patch.setEntity(new InputStreamEntity(content, -1));
-        patch.setHeader(Headers.X_HTTP_METHOD, "PATCH");
-        httpRequest = patch;
-        break;
-      case MERGE:
-        HttpPost merge = new HttpPost(uri);
-        if (content != null)
-          merge.setEntity(new InputStreamEntity(content, -1));
-        merge.setHeader(Headers.X_HTTP_METHOD, "MERGE");
-        httpRequest = merge;
-        break;
-      case PUT:
-        HttpPut put = new HttpPut(uri);
-        if (content != null)
-          put.setEntity(new InputStreamEntity(content, -1));
-        httpRequest = put;
-        break;
-      case POST:
-        HttpPost post = new HttpPost(uri);
-        if (content != null)
-          post.setEntity(new InputStreamEntity(content, -1));
-        httpRequest = post;
-        break;
-      default:
-        throw new RuntimeException("Unsupported method: " + method);
+        case GET:
+          httpRequest = new HttpGet(uri);
+          break;
+        case DELETE:
+          httpRequest = new HttpDelete(uri);
+          break;
+        case PATCH:
+          HttpPost patch = new HttpPost(uri);
+          if (content != null)
+            patch.setEntity(new InputStreamEntity(content, -1));
+          patch.setHeader(Headers.X_HTTP_METHOD, "PATCH");
+          httpRequest = patch;
+          break;
+        case MERGE:
+          HttpPost merge = new HttpPost(uri);
+          if (content != null)
+            merge.setEntity(new InputStreamEntity(content, -1));
+          merge.setHeader(Headers.X_HTTP_METHOD, "MERGE");
+          httpRequest = merge;
+          break;
+        case PUT:
+          HttpPut put = new HttpPut(uri);
+          if (content != null)
+            put.setEntity(new InputStreamEntity(content, -1));
+          httpRequest = put;
+          break;
+        case POST:
+          HttpPost post = new HttpPost(uri);
+          if (content != null)
+            post.setEntity(new InputStreamEntity(content, -1));
+          httpRequest = post;
+          break;
+        default:
+          throw new RuntimeException("Unsupported method: " + method);
       }
 
       if (headers != null) {
@@ -169,8 +171,7 @@ public class CxfRuntimeFacade implements RuntimeFacade {
         if (content != null) {
           httpRequest.addHeader(HttpHeaders.CONTENT_TYPE, mediaType.toString());
         }
-        if (method == ODataHttpMethod.GET)
-        {
+        if (method == ODataHttpMethod.GET) {
           httpRequest.addHeader(HttpHeaders.ACCEPT, mediaType.toString());
         }
       }
@@ -193,32 +194,38 @@ public class CxfRuntimeFacade implements RuntimeFacade {
   }
 
   @Override
-  public ResponseData postWebResource(String uri, InputStream content, MediaType mediaType, Map<String, Object> headers) {
+  public ResponseData postWebResource(String uri, InputStream content, MediaType mediaType,
+      Map<String, Object> headers) {
     return this.getResource(ODataHttpMethod.POST, uri, content, mediaType, headers);
   }
 
   @Override
-  public ResponseData putWebResource(String uri, InputStream content, MediaType mediaType, Map<String, Object> headers) {
+  public ResponseData putWebResource(String uri, InputStream content, MediaType mediaType,
+      Map<String, Object> headers) {
     return this.getResource(ODataHttpMethod.PUT, uri, content, mediaType, headers);
   }
 
   @Override
-  public ResponseData mergeWebResource(String uri, InputStream content, MediaType mediaType, Map<String, Object> headers) {
+  public ResponseData mergeWebResource(String uri, InputStream content, MediaType mediaType,
+      Map<String, Object> headers) {
     return this.getResource(ODataHttpMethod.MERGE, uri, content, mediaType, headers);
   }
 
   @Override
-  public ResponseData patchWebResource(String uri, InputStream content, MediaType mediaType, Map<String, Object> headers) {
+  public ResponseData patchWebResource(String uri, InputStream content, MediaType mediaType,
+      Map<String, Object> headers) {
     return this.getResource(ODataHttpMethod.PATCH, uri, content, mediaType, headers);
   }
 
   @Override
-  public ResponseData getWebResource(String uri, InputStream content, MediaType mediaType, Map<String, Object> headers) {
+  public ResponseData getWebResource(String uri, InputStream content, MediaType mediaType,
+      Map<String, Object> headers) {
     return this.getResource(ODataHttpMethod.GET, uri, content, mediaType, headers);
   }
 
   @Override
-  public ResponseData deleteWebResource(String uri, InputStream content, MediaType mediaType, Map<String, Object> headers) {
+  public ResponseData deleteWebResource(String uri, InputStream content, MediaType mediaType,
+      Map<String, Object> headers) {
     return this.getResource(ODataHttpMethod.DELETE, uri, content, mediaType, headers);
   }
 }

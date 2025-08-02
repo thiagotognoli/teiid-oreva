@@ -1,6 +1,6 @@
 package org.odata4j.format;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 public enum FormatType {
 

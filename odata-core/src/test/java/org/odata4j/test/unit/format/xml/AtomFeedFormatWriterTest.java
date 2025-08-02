@@ -15,9 +15,9 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.core4j.Enumerable;
 import org.core4j.Func;
@@ -148,16 +148,19 @@ public class AtomFeedFormatWriterTest {
       }
     }, "Id");
 
-    EntitiesResponse response = p.getEntities(null, "setName", new QueryInfo(InlineCount.NONE, top, null, null, null, null, null, null, null));
+    EntitiesResponse response = p.getEntities(null, "setName",
+        new QueryInfo(InlineCount.NONE, top, null, null, null, null, null, null, null));
     formatWriter.write(uriInfoMock, stringWriter, response);
     String s = stringWriter.toString();
     verify(uriBuilderMock, times(1)).replaceQueryParam(eq("$skiptoken"), anyString());
     long newTop = top - response.getEntities().size();
     if (newTop > 0) {
       verify(uriBuilderMock, times(1)).replaceQueryParam(eq("$top"), eq(newTop));
-      // The next url in this case should be '?$top=50&$skiptoken=<token>' and not '?$top=150&$skiptoken=<token>'
+      // The next url in this case should be '?$top=50&$skiptoken=<token>' and not
+      // '?$top=150&$skiptoken=<token>'
       assertEquals("<link rel=\"next\" href=\"" + BASE_URI + SIMPLE_ENTITIES_TOP_PATH + newTop +
-          "&amp;$skiptoken=" + response.getSkipToken() + "\"></link></feed>", s.substring(s.indexOf("<link rel=\"next\"")));
+          "&amp;$skiptoken=" + response.getSkipToken() + "\"></link></feed>",
+          s.substring(s.indexOf("<link rel=\"next\"")));
     } else {
       verify(uriBuilderMock, times(1)).replaceQueryParam(eq("$top"));
       assertEquals("<link rel=\"next\" href=\"" + BASE_URI + SIMPLE_ENTITIES_PATH + "?" +

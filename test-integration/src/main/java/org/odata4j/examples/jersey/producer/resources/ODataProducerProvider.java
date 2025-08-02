@@ -2,19 +2,23 @@ package org.odata4j.examples.jersey.producer.resources;
 
 import java.util.Properties;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.ext.Provider;
 
 import org.odata4j.producer.ODataProducer;
 import org.odata4j.producer.resources.DefaultODataProducerProvider;
 
-import com.sun.jersey.api.core.ResourceConfig;
+import org.glassfish.jersey.server.ResourceConfig;
 
 /**
  * Jersey-specific OData producer provider.
  *
- * <p>This provider allows specifying a factory as part of the container's deployment
- * descriptor (web.xml). The factory is used to create an OData producer instance.
+ * <p>
+ * This provider allows specifying a factory as part of the container's
+ * deployment
+ * descriptor (web.xml). The factory is used to create an OData producer
+ * instance.
+ * 
  * <pre>
  * {@code
  * <init-param>

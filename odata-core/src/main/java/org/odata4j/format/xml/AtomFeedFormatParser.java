@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.core4j.Enumerable;
 import org.core4j.Func1;
@@ -187,9 +187,9 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
 
   }
 
-	public static Iterable<OProperty<?>> parseProperties(
-			XMLEventReader2 reader, StartElement2 propertiesElement,
-			EdmDataServices metadata, EdmStructuralType structuralType) {
+  public static Iterable<OProperty<?>> parseProperties(
+      XMLEventReader2 reader, StartElement2 propertiesElement,
+      EdmDataServices metadata, EdmStructuralType structuralType) {
     List<OProperty<?>> rt = new ArrayList<OProperty<?>>();
 
     while (reader.hasNext()) {
@@ -207,76 +207,78 @@ public class AtomFeedFormatParser extends XmlFormatParser implements FormatParse
     throw new RuntimeException();
   }
 
-private static OProperty<?> parseProperty(XMLEventReader2 reader,
-		EdmDataServices metadata, EdmStructuralType structuralType,
-		XMLEvent2 event) {
-	String name = event.asStartElement().getName().getLocalPart();
-	Attribute2 typeAttribute = event.asStartElement().getAttributeByName(M_TYPE);
-	Attribute2 nullAttribute = event.asStartElement().getAttributeByName(M_NULL);
-	boolean isNull = nullAttribute != null && "true".equals(nullAttribute.getValue());
+  private static OProperty<?> parseProperty(XMLEventReader2 reader,
+      EdmDataServices metadata, EdmStructuralType structuralType,
+      XMLEvent2 event) {
+    String name = event.asStartElement().getName().getLocalPart();
+    Attribute2 typeAttribute = event.asStartElement().getAttributeByName(M_TYPE);
+    Attribute2 nullAttribute = event.asStartElement().getAttributeByName(M_NULL);
+    boolean isNull = nullAttribute != null && "true".equals(nullAttribute.getValue());
 
-	OProperty<?> op = null;
+    OProperty<?> op = null;
 
-	EdmType et = null;
-	if (typeAttribute != null) {
-	  String type = typeAttribute.getValue();
-	  et = metadata.resolveType(type);
-	  if (et == null) {
-	    // property arrived with an unknown type
-	    throw new RuntimeException("unknown property type: " + type);
-	  }
-	} else {
-	  EdmProperty property = (EdmProperty) structuralType.findProperty(name);
-	  if (property != null)
-	    et = property.getType();
-	  else
-	    et = EdmSimpleType.STRING; // we must support open types
-	}
-	
-	if (et instanceof EdmCollectionType) {
-		op = readCollection(name, (EdmCollectionType)et, reader, event.asStartElement(), metadata, structuralType);
-	} else {
-	    if (et != null && !et.isSimple()) {
-	      EdmStructuralType est = (EdmStructuralType) et;
-	      op = OProperties.complex(name, (EdmComplexType) et, isNull ? null : Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, est)).toList());
-	    } else {
-	      op = OProperties.parseSimple(name, (EdmSimpleType<?>) et, isNull ? null : reader.getElementText());
-	    }
-	}
-	return op;
-}
+    EdmType et = null;
+    if (typeAttribute != null) {
+      String type = typeAttribute.getValue();
+      et = metadata.resolveType(type);
+      if (et == null) {
+        // property arrived with an unknown type
+        throw new RuntimeException("unknown property type: " + type);
+      }
+    } else {
+      EdmProperty property = (EdmProperty) structuralType.findProperty(name);
+      if (property != null)
+        et = property.getType();
+      else
+        et = EdmSimpleType.STRING; // we must support open types
+    }
 
-	private static OProperty<?> readCollection(String name,
-			EdmCollectionType collectionType, XMLEventReader2 reader,
-			StartElement2 collectionElement, EdmDataServices metadata, EdmStructuralType structuralType) {
-  	EdmType componentType = collectionType.getItemType();
-	  
-  	OCollection.Builder<OObject> b = OCollections.newBuilder(componentType);
+    if (et instanceof EdmCollectionType) {
+      op = readCollection(name, (EdmCollectionType) et, reader, event.asStartElement(), metadata, structuralType);
+    } else {
+      if (et != null && !et.isSimple()) {
+        EdmStructuralType est = (EdmStructuralType) et;
+        op = OProperties.complex(name, (EdmComplexType) et,
+            isNull ? null : Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, est)).toList());
+      } else {
+        op = OProperties.parseSimple(name, (EdmSimpleType<?>) et, isNull ? null : reader.getElementText());
+      }
+    }
+    return op;
+  }
+
+  private static OProperty<?> readCollection(String name,
+      EdmCollectionType collectionType, XMLEventReader2 reader,
+      StartElement2 collectionElement, EdmDataServices metadata, EdmStructuralType structuralType) {
+    EdmType componentType = collectionType.getItemType();
+
+    OCollection.Builder<OObject> b = OCollections.newBuilder(componentType);
 
     while (reader.hasNext()) {
-        XMLEvent2 event = reader.nextEvent();
+      XMLEvent2 event = reader.nextEvent();
 
-        if (event.isEndElement() && event.asEndElement().getName().equals(collectionElement.getName())) {
-          break;
-        }
+      if (event.isEndElement() && event.asEndElement().getName().equals(collectionElement.getName())) {
+        break;
+      }
 
-        if (event.isStartElement() && event.asStartElement().getName().getNamespaceUri().equals(NS_DATASERVICES)) {
-        	OProperty<?> op = null;
-        	Attribute2 nullAttribute = event.asStartElement().getAttributeByName(M_NULL);
-        	boolean isNull = nullAttribute != null && "true".equals(nullAttribute.getValue());        	
-    	    if (!componentType.isSimple()) {
-		      EdmStructuralType est = (EdmStructuralType) componentType;
-		      op = OProperties.complex(name, (EdmComplexType) componentType, isNull ? null : Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, est)).toList());
-		    } else {
-		      op = OProperties.parseSimple(name, (EdmSimpleType<?>) componentType, isNull ? null : reader.getElementText());
-		    }
-    	    b.add(OSimpleObjects.create((EdmSimpleType<?>)componentType, op.getValue()));
+      if (event.isStartElement() && event.asStartElement().getName().getNamespaceUri().equals(NS_DATASERVICES)) {
+        OProperty<?> op = null;
+        Attribute2 nullAttribute = event.asStartElement().getAttributeByName(M_NULL);
+        boolean isNull = nullAttribute != null && "true".equals(nullAttribute.getValue());
+        if (!componentType.isSimple()) {
+          EdmStructuralType est = (EdmStructuralType) componentType;
+          op = OProperties.complex(name, (EdmComplexType) componentType, isNull ? null
+              : Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, est)).toList());
+        } else {
+          op = OProperties.parseSimple(name, (EdmSimpleType<?>) componentType, isNull ? null : reader.getElementText());
         }
+        b.add(OSimpleObjects.create((EdmSimpleType<?>) componentType, op.getValue()));
+      }
     }
-	return OProperties.collection(name, collectionType, b.build()); 
-}
+    return OProperties.collection(name, collectionType, b.build());
+  }
 
-private AtomLink parseAtomLink(XMLEventReader2 reader, StartElement2 linkElement, EdmEntitySet entitySet) {
+  private AtomLink parseAtomLink(XMLEventReader2 reader, StartElement2 linkElement, EdmEntitySet entitySet) {
     AtomLink rt = new AtomLink();
     rt.relation = getAttributeValueIfExists(linkElement, "rel");
     rt.type = getAttributeValueIfExists(linkElement, "type");
@@ -293,10 +295,11 @@ private AtomLink parseAtomLink(XMLEventReader2 reader, StartElement2 linkElement
       targetEntitySet = metadata.getEdmEntitySet(navProperty.getToRole().getType());
 
     // expected cases:
-    // 1.  </link>                  - no inlined content, i.e. deferred
-    // 2.  <m:inline/></link>       - inlined content but null entity or empty feed
-    // 3.  <m:inline><feed>...</m:inline></link> - inlined content with 1 or more items
-    // 4.  <m:inline><entry>..</m:inline></link> - inlined content 1 an item
+    // 1. </link> - no inlined content, i.e. deferred
+    // 2. <m:inline/></link> - inlined content but null entity or empty feed
+    // 3. <m:inline><feed>...</m:inline></link> - inlined content with 1 or more
+    // items
+    // 4. <m:inline><entry>..</m:inline></link> - inlined content 1 an item
 
     while (reader.hasNext()) {
       XMLEvent2 event = reader.nextEvent();
@@ -314,8 +317,10 @@ private AtomLink parseAtomLink(XMLEventReader2 reader, StartElement2 linkElement
     return rt;
   }
 
-  private DataServicesAtomEntry parseDSAtomEntry(String etag, EdmEntityType entityType, XMLEventReader2 reader, XMLEvent2 event) {
-    List<OProperty<?>> properties = Enumerable.create(parseProperties(reader, event.asStartElement(), metadata, entityType)).toList();
+  private DataServicesAtomEntry parseDSAtomEntry(String etag, EdmEntityType entityType, XMLEventReader2 reader,
+      XMLEvent2 event) {
+    List<OProperty<?>> properties = Enumerable
+        .create(parseProperties(reader, event.asStartElement(), metadata, entityType)).toList();
     return new DataServicesAtomEntry(etag, properties);
   }
 
@@ -380,12 +385,12 @@ private AtomLink parseAtomLink(XMLEventReader2 reader, StartElement2 linkElement
       XMLEvent2 event = reader.nextEvent();
 
       if (event.isEndElement() && event.asEndElement().getName().equals(entryElement.getName())) {
-        rt.id = id; //http://localhost:8810/Oneoff01.svc/Comment(1)
+        rt.id = id; // http://localhost:8810/Oneoff01.svc/Comment(1)
         rt.title = title;
         rt.summary = summary;
         rt.updated = updated;
-        rt.categoryScheme = categoryScheme; //http://schemas.microsoft.com/ado/2007/08/dataservices/scheme
-        rt.categoryTerm = categoryTerm; //NorthwindModel.Customer
+        rt.categoryScheme = categoryScheme; // http://schemas.microsoft.com/ado/2007/08/dataservices/scheme
+        rt.categoryTerm = categoryTerm; // NorthwindModel.Customer
         rt.contentType = contentType;
         rt.atomLinks = atomLinks;
 
@@ -564,8 +569,8 @@ private AtomLink parseAtomLink(XMLEventReader2 reader, StartElement2 linkElement
                 link.title, link.href, relatedEntity));
           } else {
             // no inlined entity
-          rt.add(OLinks.relatedEntity(link.relation, link.title, link.href));
-        }
+            rt.add(OLinks.relatedEntity(link.relation, link.title, link.href));
+          }
       }
     }
     return rt;

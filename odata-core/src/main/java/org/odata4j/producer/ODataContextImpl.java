@@ -4,14 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 
 /**
  * An implementation of ODataContext
  */
 public class ODataContextImpl implements ODataContext {
 
-  private ODataContextImpl() {}
+  private ODataContextImpl() {
+  }
 
   @Override
   public <T> T getContextAspect(Class<T> contextClass) {
@@ -33,17 +34,18 @@ public class ODataContextImpl implements ODataContext {
   }
 
   public static class ODataContextBuilder {
-    protected ODataContextBuilder() {}
+    protected ODataContextBuilder() {
+    }
 
     public ODataContextBuilder aspect(Object aspect) {
 
       // in Jersy, ContainerRequest implements a bunch of interfaces (
       // HttpRequestContext, Traceable, HttpHeaders, Reqeust, SecurityContext).
 
-      // JohnS wants to avoid coupling with javax.ws.rs things whenever
-      // possible.  So, we wrap things we provide wrappers for (and also expose
-      // them as their native things).  I'm not really sure of the value
-      // of this...isn't odata4j intrinsically linked to javax.ws.rs already?
+      // JohnS wants to avoid coupling with jakarta.ws.rs things whenever
+      // possible. So, we wrap things we provide wrappers for (and also expose
+      // them as their native things). I'm not really sure of the value
+      // of this...isn't odata4j intrinsically linked to jakarta.ws.rs already?
       // it's not like we are going to swap that out...
 
       if (HttpHeaders.class.isAssignableFrom(aspect.getClass())) {

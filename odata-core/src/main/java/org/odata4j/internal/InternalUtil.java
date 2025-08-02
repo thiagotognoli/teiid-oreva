@@ -59,10 +59,12 @@ public class InternalUtil {
 
   private static final DateTimeFormatter DATETIME_XML = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm");
   private static final DateTimeFormatter DATETIME_WITH_SECONDS_XML = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
-  private static final DateTimeFormatter DATETIME_WITH_MILLIS_XML = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  private static final DateTimeFormatter DATETIME_WITH_MILLIS_XML = DateTimeFormat
+      .forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
   private static final DateTimeFormatter DATETIMEOFFSET_XML = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZZ");
-  private static final DateTimeFormatter DATETIMEOFFSET_WITH_MILLIS_XML = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+  private static final DateTimeFormatter DATETIMEOFFSET_WITH_MILLIS_XML = DateTimeFormat
+      .forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
 
   private static final String DATETIME_JSON_SUFFIX = ")\\/\"";
   private static final String DATETIME_JSON_PREFIX = "\"\\/Date(";
@@ -88,7 +90,8 @@ public class InternalUtil {
       if (nanoSeconds.length() <= 4)
         return DATETIME_WITH_MILLIS_XML.parseDateTime(dateTime + seconds + nanoSeconds).toLocalDateTime();
 
-      return adjustMillis(DATETIME_WITH_MILLIS_XML.parseDateTime(dateTime + seconds + nanoSeconds.substring(0, 4)), nanoSeconds).toLocalDateTime();
+      return adjustMillis(DATETIME_WITH_MILLIS_XML.parseDateTime(dateTime + seconds + nanoSeconds.substring(0, 4)),
+          nanoSeconds).toLocalDateTime();
     }
     throw new IllegalArgumentException("Illegal datetime format " + value);
   }
@@ -115,7 +118,8 @@ public class InternalUtil {
       if (nanoSeconds.length() <= 4)
         return DATETIMEOFFSET_WITH_MILLIS_XML.withOffsetParsed().parseDateTime(dateTime + nanoSeconds + offset);
 
-      return adjustMillis(DATETIMEOFFSET_WITH_MILLIS_XML.withOffsetParsed().parseDateTime(dateTime + nanoSeconds.substring(0, 4) + offset), nanoSeconds);
+      return adjustMillis(DATETIMEOFFSET_WITH_MILLIS_XML.withOffsetParsed()
+          .parseDateTime(dateTime + nanoSeconds.substring(0, 4) + offset), nanoSeconds);
     }
     throw new IllegalArgumentException("Illegal datetimeoffset format " + value);
   }
@@ -199,7 +203,8 @@ public class InternalUtil {
   public static String formatDateTimeOffsetForJson(DateTime dateTime) {
     long millis = dateTime.getMillis();
     int offsetInMillis = dateTime.getZone().getOffset(millis);
-    return DATETIME_JSON_PREFIX + (millis - offsetInMillis) + String.format(Locale.US, "%+05d", offsetInMillis / 1000 / 60) + DATETIME_JSON_SUFFIX;
+    return DATETIME_JSON_PREFIX + (millis - offsetInMillis)
+        + String.format(Locale.US, "%+05d", offsetInMillis / 1000 / 60) + DATETIME_JSON_SUFFIX;
   }
 
   public static String formatTimeForXml(LocalTime localTime) {
@@ -269,16 +274,16 @@ public class InternalUtil {
           if (beanModel.canWrite(ol.getTitle())) {
             Collection<Object> relatedEntities = ol
                 .getRelatedEntities() == null
-                ? null
-                : Enumerable.create(ol.getRelatedEntities())
-                    .select(new Func1<OEntity, Object>() {
-                      @Override
-                      public Object apply(OEntity input) {
-                        return toPojo(
-                            beanModel.getCollectionElementType(collectionName),
-                            input);
-                      }
-                    }).toList();
+                    ? null
+                    : Enumerable.create(ol.getRelatedEntities())
+                        .select(new Func1<OEntity, Object>() {
+                          @Override
+                          public Object apply(OEntity input) {
+                            return toPojo(
+                                beanModel.getCollectionElementType(collectionName),
+                                input);
+                          }
+                        }).toList();
             beanModel.setCollectionValue(rt, collectionName,
                 relatedEntities);
           }
@@ -360,5 +365,23 @@ public class InternalUtil {
       outStream.write(buf, 0, n);
     }
     outStream.flush();
+  }
+
+  /**
+   * Returns the system property value for the passed key.
+   * 
+   * @param key
+   *            the key
+   * @return the system property value
+   */
+  public static String getSystemPropertyValue(String key) {
+    String value = null;
+
+    value = System.getProperty(key);
+    if (value == null) {
+      value = System.getenv(key);
+    }
+
+    return value;
   }
 }

@@ -2,8 +2,8 @@ package org.odata4j.consumer;
 
 import java.util.List;
 
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.StatusType;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.StatusType;
 
 import org.core4j.Enumerable;
 import org.odata4j.core.OEntities;
@@ -25,7 +25,8 @@ import org.odata4j.format.xml.EdmxFormatParser;
 import org.odata4j.stax2.XMLEventReader2;
 
 /**
- * Useful base class for {@link ODataClient} implementations with common functionality.
+ * Useful base class for {@link ODataClient} implementations with common
+ * functionality.
  */
 public abstract class AbstractODataClient implements ODataClient {
 
@@ -48,7 +49,8 @@ public abstract class AbstractODataClient implements ODataClient {
 
   public Iterable<AtomCollectionInfo> getCollections(ODataClientRequest request) throws ODataProducerException {
     ODataClientResponse response = doRequest(FormatType.ATOM, request, Status.OK);
-    Enumerable<AtomCollectionInfo> collections = Enumerable.create(AtomServiceDocumentFormatParser.parseWorkspaces(toXml(response)))
+    Enumerable<AtomCollectionInfo> collections = Enumerable
+        .create(AtomServiceDocumentFormatParser.parseWorkspaces(toXml(response)))
         .selectMany(AtomWorkspaceInfo.GET_COLLECTIONS);
     response.close();
     return collections;
@@ -98,7 +100,8 @@ public abstract class AbstractODataClient implements ODataClient {
     doRequest(getFormatType(), request, Status.NO_CONTENT).close();
   }
 
-  public Entry createRequestEntry(EdmEntitySet entitySet, OEntityKey entityKey, List<OProperty<?>> props, List<OLink> links) {
+  public Entry createRequestEntry(EdmEntitySet entitySet, OEntityKey entityKey, List<OProperty<?>> props,
+      List<OLink> links) {
     final OEntity entity = entityKey == null
         ? OEntities.createRequest(entitySet, props, links)
         : OEntities.create(entitySet, entityKey, props, links);
@@ -116,7 +119,8 @@ public abstract class AbstractODataClient implements ODataClient {
     };
   }
 
-  protected abstract ODataClientResponse doRequest(FormatType reqType, ODataClientRequest request, StatusType... expectedResponseStatus) throws ODataProducerException;
+  protected abstract ODataClientResponse doRequest(FormatType reqType, ODataClientRequest request,
+      StatusType... expectedResponseStatus) throws ODataProducerException;
 
   protected abstract XMLEventReader2 toXml(ODataClientResponse response);
 

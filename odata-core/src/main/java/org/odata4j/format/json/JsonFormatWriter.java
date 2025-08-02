@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
@@ -34,10 +34,12 @@ import org.odata4j.repack.org.apache.commons.codec.binary.Base64;
 /**
  * Write content to an output stream in JSON format.
  *
- * <p>This class is abstract because it delegates the strategy pattern of writing
+ * <p>
+ * This class is abstract because it delegates the strategy pattern of writing
  * actual content elements to its (various) subclasses.
  *
- * <p>Each element in the array to be written can be wrapped in a function call
+ * <p>
+ * Each element in the array to be written can be wrapped in a function call
  * on the JavaScript side by specifying the name of a function to call to the
  * constructor.
  *
@@ -51,7 +53,7 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
    * Creates a new JSON writer.
    *
    * @param jsonpCallback a function to call on the javascript side to act
-   * on the data provided in the content.
+   *                      on the data provided in the content.
    */
   public JsonFormatWriter(String jsonpCallback) {
     this.jsonpCallback = jsonpCallback;
@@ -61,8 +63,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
    * A strategy method to actually write content objects
    *
    * @param uriInfo the base URI that indicates where in the schema we are
-   * @param jw the JSON writer object
-   * @param target the content value to be written
+   * @param jw      the JSON writer object
+   * @param target  the content value to be written
    */
   abstract protected void writeContent(UriInfo uriInfo, JsonWriter jw, T target);
 
@@ -135,7 +137,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
       jw.writeRaw(InternalUtil.formatTimeForJson((LocalTime) pvalue));
     } else if (type.equals(EdmSimpleType.DATETIMEOFFSET)) {
       jw.writeRaw(InternalUtil.formatDateTimeOffsetForJson((DateTime) pvalue));
-    } else if (type instanceof EdmComplexType || (type instanceof EdmSimpleType && (!((EdmSimpleType<?>) type).isSimple()))) {
+    } else if (type instanceof EdmComplexType
+        || (type instanceof EdmSimpleType && (!((EdmSimpleType<?>) type).isSimple()))) {
       // the OComplexObject value type is not in use everywhere yet, fix TODO
       if (pvalue instanceof OComplexObject) {
         pvalue = ((OComplexObject) pvalue).getProperties();
@@ -167,19 +170,23 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
             jw.writeSeparator();
           }
           if (obj instanceof OComplexObject) {
-            writeComplexObject(jw, null, obj.getType().getFullyQualifiedTypeName(), ((OComplexObject) obj).getProperties());
+            writeComplexObject(jw, null, obj.getType().getFullyQualifiedTypeName(),
+                ((OComplexObject) obj).getProperties());
           } else if (obj instanceof OSimpleObject) {
             writeValue(jw, obj.getType(), ((OSimpleObject) obj).getValue());
           } else if (obj instanceof OCollection) {
-        	writeCollection(jw, type, (OCollection<?>)obj);
+            writeCollection(jw, type, (OCollection<?>) obj);
           }
-          //else if (obj instanceof OEntity) {
-          //  I think the FormatWriter sig is going to have to change:
-          //  2.  why does JSON write absolute uris (http://blah/blah) for every entity?  The Atom
-          //      equivalent parts have the relative uri in many places.  Hmmh, a JSON feed representation
-          //      doesn't carry the xml:base uri like in Atom...weird...protocol seems inconsistent.
-          //  this.writeOEntity(null, jw, null, null, isFirst);
-          //}
+          // else if (obj instanceof OEntity) {
+          // I think the FormatWriter sig is going to have to change:
+          // 2. why does JSON write absolute uris (http://blah/blah) for every entity? The
+          // Atom
+          // equivalent parts have the relative uri in many places. Hmmh, a JSON feed
+          // representation
+          // doesn't carry the xml:base uri like in Atom...weird...protocol seems
+          // inconsistent.
+          // this.writeOEntity(null, jw, null, null, isFirst);
+          // }
           // others for later: ORowType
         }
 
@@ -189,20 +196,22 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
     jw.endObject();
   }
 
-  protected void writeComplexObject(JsonWriter jw, String complexObjectName, String fullyQualifiedTypeName, List<OProperty<?>> props) {
+  protected void writeComplexObject(JsonWriter jw, String complexObjectName, String fullyQualifiedTypeName,
+      List<OProperty<?>> props) {
     jw.startObject();
     {
-      /* Confused:  The live OData producers that have complex types (ebay, netflix)
-       * both write this __metadata object for each complex object.  I can't find
+      /*
+       * Confused: The live OData producers that have complex types (ebay, netflix)
+       * both write this __metadata object for each complex object. I can't find
        * this in the OData spec though...
-      jw.writeName("__metadata");
-      jw.startObject();
-      {
-      jw.writeName("type");
-      jw.writeString(fullyQualifiedTypeName);
-      }
-      jw.endObject();
-      jw.writeSeparator();
+       * jw.writeName("__metadata");
+       * jw.startObject();
+       * {
+       * jw.writeName("type");
+       * jw.writeString(fullyQualifiedTypeName);
+       * }
+       * jw.endObject();
+       * jw.writeSeparator();
        */
       if (complexObjectName != null) {
         jw.writeName(complexObjectName);
@@ -222,8 +231,10 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
     {
       String baseUri = null;
 
-      // TODO: I'm keeping this pattern of writing the __metadata if we have a non-null type..it seems like we could still
-      //       write the uri even if we don't have a type.  Also, are there any scenarios where the entity type would be null?  Not sure.
+      // TODO: I'm keeping this pattern of writing the __metadata if we have a
+      // non-null type..it seems like we could still
+      // write the uri even if we don't have a type. Also, are there any scenarios
+      // where the entity type would be null? Not sure.
       if (isResponse && oe.getEntityType() != null) {
         baseUri = uriInfo.getBaseUri().toString();
 
@@ -267,8 +278,8 @@ public abstract class JsonFormatWriter<T> implements FormatWriter<T> {
       if (link.isCollection()) {
 
         // the version check will only make sense when this library properly
-        // supports version negotiation.  For now we write v2 only
-        if (true) { //  || ODataVersion.isVersionGreaterThan(settings.version, ODataVersion.V1)) {
+        // supports version negotiation. For now we write v2 only
+        if (true) { // || ODataVersion.isVersionGreaterThan(settings.version, ODataVersion.V1)) {
           jw.startObject();
           jw.writeName(JsonFormatParser.RESULTS_PROPERTY);
         }

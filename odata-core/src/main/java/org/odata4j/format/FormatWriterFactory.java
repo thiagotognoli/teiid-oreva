@@ -2,7 +2,7 @@ package org.odata4j.format;
 
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.odata4j.edm.EdmDataServices;
 import org.odata4j.format.json.JsonCollectionFormatWriter;
@@ -51,7 +51,7 @@ public class FormatWriterFactory {
     FormatWriter<PropertyResponse> getPropertyFormatWriter();
 
     FormatWriter<SimpleResponse> getSimpleFormatWriter();
-    
+
     FormatWriter<RawResponse> getRawFormatWriter();
 
     FormatWriter<Entry> getRequestEntryFormatWriter();
@@ -68,7 +68,8 @@ public class FormatWriterFactory {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> FormatWriter<T> getFormatWriter(Class<T> targetType, List<MediaType> acceptTypes, String format, String callback) {
+  public static <T> FormatWriter<T> getFormatWriter(Class<T> targetType, List<MediaType> acceptTypes, String format,
+      String callback) {
 
     FormatType type = null;
 
@@ -108,8 +109,8 @@ public class FormatWriterFactory {
       return (FormatWriter<T>) formatWriters.getSimpleFormatWriter();
 
     if (targetType.equals(RawResponse.class))
-        return (FormatWriter<T>) formatWriters.getRawFormatWriter();
-    
+      return (FormatWriter<T>) formatWriters.getRawFormatWriter();
+
     if (Entry.class.isAssignableFrom(targetType))
       return (FormatWriter<T>) formatWriters.getRequestEntryFormatWriter();
 
@@ -128,7 +129,8 @@ public class FormatWriterFactory {
     if (targetType.equals(ErrorResponse.class))
       return (FormatWriter<T>) formatWriters.getErrorFormatWriter();
 
-    throw new IllegalArgumentException("Unable to locate format writer for " + targetType.getName() + " and format " + type);
+    throw new IllegalArgumentException(
+        "Unable to locate format writer for " + targetType.getName() + " and format " + type);
 
   }
 
@@ -169,7 +171,7 @@ public class FormatWriterFactory {
     public FormatWriter<SimpleResponse> getSimpleFormatWriter() {
       return new JsonSimpleFormatWriter(callback);
     }
-    
+
     @Override
     public FormatWriter<RawResponse> getRawFormatWriter() {
       return new JsonRawFormatWriter();
@@ -257,11 +259,11 @@ public class FormatWriterFactory {
     public FormatWriter<SimpleResponse> getSimpleFormatWriter() {
       return new AtomSimpleFormatWriter();
     }
-    
+
     @Override
     public FormatWriter<RawResponse> getRawFormatWriter() {
       return new AtomRawFormatWriter();
-    }    
+    }
 
     @Override
     public FormatWriter<ErrorResponse> getErrorFormatWriter() {

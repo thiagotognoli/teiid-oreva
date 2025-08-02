@@ -1,26 +1,35 @@
 package org.odata4j.core;
 
+import org.odata4j.core.ODataConstants.Charsets;
+
 /**
  * Useful constants.
  */
 public class ODataConstants {
 
-  private ODataConstants() {}
+  private ODataConstants() {
+  }
 
   public static final String TEXT_PLAIN = "text/plain";
   public static final String TEXT_PLAIN_CHARSET_UTF8 = TEXT_PLAIN + ";charset=" + Charsets.Lower.UTF_8;
 
   public static final String APPLICATION_ATOM_XML = "application/atom+xml";
-  public static final String APPLICATION_ATOM_XML_CHARSET_UTF8 = APPLICATION_ATOM_XML + ";charset=" + Charsets.Lower.UTF_8;
+  public static final String APPLICATION_ATOM_XML_CHARSET_UTF8 = APPLICATION_ATOM_XML + ";charset="
+      + Charsets.Lower.UTF_8;
 
   public static final String APPLICATION_ATOMSVC_XML = "application/atomsvc+xml";
-  public static final String APPLICATION_ATOMSVC_XML_CHARSET_UTF8 = APPLICATION_ATOMSVC_XML + ";charset=" + Charsets.Lower.UTF_8;
+  public static final String APPLICATION_ATOMSVC_XML_CHARSET_UTF8 = APPLICATION_ATOMSVC_XML + ";charset="
+      + Charsets.Lower.UTF_8;
 
+  public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
   public static final String APPLICATION_XML = "application/xml";
   public static final String APPLICATION_XML_CHARSET_UTF8 = "application/xml;charset=" + Charsets.Lower.UTF_8;
   public static final String TEXT_JAVASCRIPT_CHARSET_UTF8 = "text/javascript;charset=" + Charsets.Lower.UTF_8;
   public static final String APPLICATION_JAVASCRIPT = "application/json";
-  public static final String APPLICATION_JAVASCRIPT_CHARSET_UTF8 = APPLICATION_JAVASCRIPT + ";charset=" + Charsets.Lower.UTF_8;
+  public static final String APPLICATION_JAVASCRIPT_CHARSET_UTF8 = APPLICATION_JAVASCRIPT + ";charset="
+      + Charsets.Lower.UTF_8;
+
+  public static final String JERSEY_CLIENT_CHUNKED_ENCODING_SIZE = "jersey.config.client.chunkedEncodingSize";
 
   public static final ODataVersion DATA_SERVICE_VERSION = ODataVersion.V1;
   public static final String DATA_SERVICE_VERSION_HEADER = DATA_SERVICE_VERSION.asString;

@@ -2,15 +2,15 @@ package org.odata4j.producer.resources;
 
 import java.io.StringWriter;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.Providers;
 
 import org.odata4j.core.ODataConstants;
 import org.odata4j.edm.EdmDataServices;
@@ -22,7 +22,8 @@ import org.odata4j.producer.ODataProducer;
 public class ServiceDocumentResource {
 
   @GET
-  @Produces({ ODataConstants.APPLICATION_XML_CHARSET_UTF8, ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8, ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8, ODataConstants.APPLICATION_XML })
+  @Produces({ ODataConstants.APPLICATION_XML_CHARSET_UTF8, ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8, ODataConstants.APPLICATION_XML })
   public Response getServiceDocument(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -35,7 +36,8 @@ public class ServiceDocumentResource {
     EdmDataServices metadata = producer.getMetadata();
 
     StringWriter w = new StringWriter();
-    FormatWriter<EdmDataServices> fw = FormatWriterFactory.getFormatWriter(EdmDataServices.class, httpHeaders.getAcceptableMediaTypes(), format, callback);
+    FormatWriter<EdmDataServices> fw = FormatWriterFactory.getFormatWriter(EdmDataServices.class,
+        httpHeaders.getAcceptableMediaTypes(), format, callback);
     fw.write(uriInfo, w, metadata);
 
     return Response.ok(w.toString(), fw.getContentType())

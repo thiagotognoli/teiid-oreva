@@ -3,16 +3,20 @@ package org.odata4j.exceptions;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.StatusType;
+import jakarta.ws.rs.core.Response.StatusType;
 
 import org.odata4j.core.OError;
 import org.odata4j.core.Throwables;
 
 /**
  * A static factory to create {@link ODataProducerException} instances.
- * <p>This factory is used after deserialization of error responses retrieved from an OData
- * producer; it returns one of the following exceptions based on the HTTP status of the response:
- * <ul><li>{@link BadRequestException},</li>
+ * <p>
+ * This factory is used after deserialization of error responses retrieved from
+ * an OData
+ * producer; it returns one of the following exceptions based on the HTTP status
+ * of the response:
+ * <ul>
+ * <li>{@link BadRequestException},</li>
  * <li>{@link ForbiddenException},</li>
  * <li>{@link MethodNotAllowedException},</li>
  * <li>{@link NotAcceptableException},</li>
@@ -20,14 +24,18 @@ import org.odata4j.core.Throwables;
  * <li>{@link NotFoundException},</li>
  * <li>{@link NotImplementedException},</li>
  * <li>{@link ServerErrorException},</li>
- * <li>{@link UnsupportedMediaTypeException}</li></ul>
- * In case the HTTP status cannot be mapped to a specific sub-class, an unspecific ODataProducerException is thrown.</p>
+ * <li>{@link UnsupportedMediaTypeException}</li>
+ * </ul>
+ * In case the HTTP status cannot be mapped to a specific sub-class, an
+ * unspecific ODataProducerException is thrown.
+ * </p>
  */
 public class ODataProducerExceptions {
 
   private static ODataProducerExceptions SINGLETON = new ODataProducerExceptions();
 
-  private ODataProducerExceptions() {}
+  private ODataProducerExceptions() {
+  }
 
   private Map<Integer, ExceptionFactory<?>> exceptionFactories = null;
 
@@ -45,15 +53,17 @@ public class ODataProducerExceptions {
     add(new UnsupportedMediaTypeException.Factory());
   }
 
-  private static void ensureThatExceptionFactoryMapIsInitialized() throws InstantiationException, IllegalAccessException {
+  private static void ensureThatExceptionFactoryMapIsInitialized()
+      throws InstantiationException, IllegalAccessException {
     if (SINGLETON.exceptionFactories == null)
       SINGLETON.initializeExceptionMap();
   }
 
   /**
-   * Adds an {@link ExceptionFactory} and thus makes the created exception available (and catchable) for OData consumers.
+   * Adds an {@link ExceptionFactory} and thus makes the created exception
+   * available (and catchable) for OData consumers.
    *
-   * @param exceptionFactory  the exception factory to add
+   * @param exceptionFactory the exception factory to add
    */
   public static void add(final ExceptionFactory<?> exceptionFactory) {
     try {
@@ -79,7 +89,7 @@ public class ODataProducerExceptions {
   /**
    * Creates a new {@link ODataProducerException}.
    *
-   * @param status  the HTTP status received in conjunction with this error
+   * @param status the HTTP status received in conjunction with this error
    * @param error  the OData error message returned by the producer
    * @return an instance of {@link ODataProducerException}
    */

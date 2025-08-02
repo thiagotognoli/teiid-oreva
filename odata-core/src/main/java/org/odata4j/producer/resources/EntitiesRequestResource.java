@@ -7,24 +7,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.Providers;
 
 import org.odata4j.core.Guid;
 import org.odata4j.core.ODataConstants;
@@ -53,11 +53,11 @@ public class EntitiesRequestResource extends BaseResource {
 
   @POST
   @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
-			ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.APPLICATION_ATOM_XML, 
-			ODataConstants.APPLICATION_XML, 
-			ODataConstants.APPLICATION_JAVASCRIPT })
+      ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML,
+      ODataConstants.APPLICATION_JAVASCRIPT })
   public Response createEntity(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -69,7 +69,8 @@ public class EntitiesRequestResource extends BaseResource {
       InputStream payload) throws Exception {
 
     // visual studio will send a soap mex request
-    if (entitySetName.equals("mex") && httpHeaders.getMediaType() != null && httpHeaders.getMediaType().toString().startsWith("application/soap+xml"))
+    if (entitySetName.equals("mex") && httpHeaders.getMediaType() != null
+        && httpHeaders.getMediaType().toString().startsWith("application/soap+xml"))
       throw new UnsupportedMediaTypeException("SOAP mex requests are not supported");
 
     log("createEntity", "entitySetName", entitySetName);
@@ -89,7 +90,8 @@ public class EntitiesRequestResource extends BaseResource {
       }
 
       QueryInfo query = QueryInfo.newBuilder().setCustomOptions(OptionsQueryParser.parseCustomOptions(uriInfo)).build();
-      return FunctionResource.callFunction(callingMethod, httpHeaders, uriInfo, securityContext, producer, entitySetName, format, callback, query);
+      return FunctionResource.callFunction(callingMethod, httpHeaders, uriInfo, securityContext, producer,
+          entitySetName, format, callback, query);
     }
 
     // is this a new media resource?
@@ -114,7 +116,8 @@ public class EntitiesRequestResource extends BaseResource {
 
     // also on the plus side we can now parse the stream directly off the wire....
     return createEntity(httpHeaders, uriInfo, securityContext, producer, entitySetName,
-        this.getRequestEntity(httpHeaders, uriInfo, payload, producer.getMetadata(), entitySetName, null), odataContext);
+        this.getRequestEntity(httpHeaders, uriInfo, payload, producer.getMetadata(), entitySetName, null),
+        odataContext);
   }
 
   protected Response createEntity(
@@ -143,7 +146,8 @@ public class EntitiesRequestResource extends BaseResource {
         .status(Status.CREATED)
         .location(URI.create(entryId))
         .header(ODataConstants.Headers.DATA_SERVICE_VERSION,
-            ODataConstants.DATA_SERVICE_VERSION_HEADER).build();
+            ODataConstants.DATA_SERVICE_VERSION_HEADER)
+        .build();
   }
 
   protected Response createMediaLinkEntry(
@@ -157,7 +161,8 @@ public class EntitiesRequestResource extends BaseResource {
 
     log("createMediaLinkEntity", "entitySetName", entitySet.getName());
 
-    OEntity mle = super.createOrUpdateMediaLinkEntry(httpHeaders, uriInfo, entitySet, producer, payload, null, odataContext);
+    OEntity mle = super.createOrUpdateMediaLinkEntry(httpHeaders, uriInfo, entitySet, producer, payload, null,
+        odataContext);
 
     // return the mle
     return createEntity(httpHeaders,
@@ -192,7 +197,8 @@ public class EntitiesRequestResource extends BaseResource {
       // same set of query options as entity set queries so give them everything.
 
       QueryInfo query = QueryInfo.newBuilder().setCustomOptions(OptionsQueryParser.parseCustomOptions(uriInfo)).build();
-      response = FunctionResource.callFunction(ODataHttpMethod.PUT, httpHeaders, uriInfo, securityContext, producer, functionName, format, callback, query);
+      response = FunctionResource.callFunction(ODataHttpMethod.PUT, httpHeaders, uriInfo, securityContext, producer,
+          functionName, format, callback, query);
     } else {
       throw new NotFoundException(functionName);
     }
@@ -223,7 +229,8 @@ public class EntitiesRequestResource extends BaseResource {
       // same set of query options as entity set queries so give them everything.
 
       QueryInfo query = QueryInfo.newBuilder().setCustomOptions(OptionsQueryParser.parseCustomOptions(uriInfo)).build();
-      response = FunctionResource.callFunction(ODataHttpMethod.DELETE, httpHeaders, uriInfo, securityContext, producer, functionName, format, callback, query);
+      response = FunctionResource.callFunction(ODataHttpMethod.DELETE, httpHeaders, uriInfo, securityContext, producer,
+          functionName, format, callback, query);
     } else {
       throw new NotFoundException(functionName);
     }
@@ -233,11 +240,11 @@ public class EntitiesRequestResource extends BaseResource {
 
   @GET
   @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
-			ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.APPLICATION_ATOM_XML,
-			ODataConstants.APPLICATION_XML,
-			ODataConstants.APPLICATION_JAVASCRIPT })
+      ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML,
+      ODataConstants.APPLICATION_JAVASCRIPT })
   public Response getEntities(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -271,20 +278,21 @@ public class EntitiesRequestResource extends BaseResource {
 
     ODataProducer producer = getODataProducer(providers);
 
-    return getEntitiesImpl(httpHeaders, uriInfo, securityContext, producer, entitySetName, false, inlineCount, top, skip,
+    return getEntitiesImpl(httpHeaders, uriInfo, securityContext, producer, entitySetName, false, inlineCount, top,
+        skip,
         filter, orderBy, format, callback, skipToken, expand, select);
   }
 
   @GET
   @Path("{count: [$]count}")
   @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
-			ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.TEXT_PLAIN_CHARSET_UTF8,
-			ODataConstants.TEXT_PLAIN,
-			ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.APPLICATION_ATOM_XML,
-			ODataConstants.APPLICATION_XML,
-			ODataConstants.APPLICATION_JAVASCRIPT })
+      ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.TEXT_PLAIN_CHARSET_UTF8,
+      ODataConstants.TEXT_PLAIN,
+      ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML,
+      ODataConstants.APPLICATION_JAVASCRIPT })
   public Response getEntitiesCount(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -362,7 +370,8 @@ public class EntitiesRequestResource extends BaseResource {
     if (producer.getMetadata().findEdmFunctionImport(entitySetName) != null) {
       // functions that return collections of entities should support the
       // same set of query options as entity set queries so give them everything.
-      return FunctionResource.callFunction(ODataHttpMethod.GET, httpHeaders, uriInfo, securityContext, producer, entitySetName, format, callback, query);
+      return FunctionResource.callFunction(ODataHttpMethod.GET, httpHeaders, uriInfo, securityContext, producer,
+          entitySetName, format, callback, query);
     }
 
     Response response = null;
@@ -378,8 +387,7 @@ public class EntitiesRequestResource extends BaseResource {
           .ok(entity, ODataConstants.TEXT_PLAIN_CHARSET_UTF8)
           .header(ODataConstants.Headers.DATA_SERVICE_VERSION, version.asString)
           .build();
-    }
-    else {
+    } else {
       EntitiesResponse entitiesResponse = producer.getEntities(odataContext, entitySetName, query);
 
       if (entitiesResponse == null) {
@@ -387,19 +395,19 @@ public class EntitiesRequestResource extends BaseResource {
       }
 
       StringWriter sw = new StringWriter();
-      FormatWriter<EntitiesResponse> fw =
-          FormatWriterFactory.getFormatWriter(
-              EntitiesResponse.class,
-              httpHeaders.getAcceptableMediaTypes(),
-              format,
-              callback);
+      FormatWriter<EntitiesResponse> fw = FormatWriterFactory.getFormatWriter(
+          EntitiesResponse.class,
+          httpHeaders.getAcceptableMediaTypes(),
+          format,
+          callback);
 
       fw.write(uriInfo, sw, entitiesResponse);
       String entity = sw.toString();
 
       // TODO remove this hack, check whether we are Version 2.0 compatible anyway
       ODataVersion version = MediaType.valueOf(fw.getContentType()).isCompatible(MediaType.APPLICATION_JSON_TYPE)
-          ? ODataVersion.V2 : ODataVersion.V2;
+          ? ODataVersion.V2
+          : ODataVersion.V2;
 
       response = Response
           .ok(entity, fw.getContentType())
@@ -413,8 +421,8 @@ public class EntitiesRequestResource extends BaseResource {
   @Path("{batch: [$]batch}")
   @Consumes(ODataBatchProvider.MULTIPART_MIXED)
   @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
-			ODataConstants.APPLICATION_ATOM_XML, 
-			ODataConstants.APPLICATION_XML })
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML })
   public Response processBatch(
       @Context Providers providers,
       @Context HttpHeaders headers,
@@ -457,24 +465,26 @@ public class EntitiesRequestResource extends BaseResource {
       Response response = null;
 
       switch (bodyPart.getHttpMethod()) {
-      case POST:
-        response = this.createEntity(httpHeaders, uriInfo, securityContext, producer,
-            entitySetName,
-            getRequestEntity(httpHeaders, uriInfo, entityString, producer.getMetadata(), entitySetName, null), odataContext);
-        break;
-      case PUT:
-        response = er.updateEntity(httpHeaders, uriInfo, securityContext, providers,
-            entitySetName, entityId, entityString, odataContext);
-        break;
-      case MERGE:
-        response = er.mergeEntity(httpHeaders, uriInfo, providers, securityContext, entitySetName,
-            entityId, entityString);
-        break;
-      case DELETE:
-        response = er.deleteEntity(httpHeaders, uriInfo, providers, securityContext, format, callback, entitySetName, entityId);
-        break;
-      case GET:
-        throw new UnsupportedOperationException("Not supported yet.");
+        case POST:
+          response = this.createEntity(httpHeaders, uriInfo, securityContext, producer,
+              entitySetName,
+              getRequestEntity(httpHeaders, uriInfo, entityString, producer.getMetadata(), entitySetName, null),
+              odataContext);
+          break;
+        case PUT:
+          response = er.updateEntity(httpHeaders, uriInfo, securityContext, providers,
+              entitySetName, entityId, entityString, odataContext);
+          break;
+        case MERGE:
+          response = er.mergeEntity(httpHeaders, uriInfo, providers, securityContext, entitySetName,
+              entityId, entityString);
+          break;
+        case DELETE:
+          response = er.deleteEntity(httpHeaders, uriInfo, providers, securityContext, format, callback, entitySetName,
+              entityId);
+          break;
+        case GET:
+          throw new UnsupportedOperationException("Not supported yet.");
       }
 
       batchResponse.append("\n--").append(changesetBoundary);
@@ -492,7 +502,8 @@ public class EntitiesRequestResource extends BaseResource {
     return Response
         .status(Status.ACCEPTED)
         .type(ODataBatchProvider.MULTIPART_MIXED + ";boundary="
-            + batchBoundary).header(
+            + batchBoundary)
+        .header(
             ODataConstants.Headers.DATA_SERVICE_VERSION,
             ODataConstants.DATA_SERVICE_VERSION_HEADER)
         .entity(batchResponse.toString()).build();

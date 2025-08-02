@@ -4,21 +4,21 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.logging.Logger;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.Providers;
 
 import org.odata4j.core.ODataConstants;
 import org.odata4j.core.ODataVersion;
@@ -43,12 +43,11 @@ import org.odata4j.producer.RawResponse;
 
 public class PropertyRequestResource extends BaseResource {
 
-  private static final Logger log =
-      Logger.getLogger(PropertyRequestResource.class.getName());
+  private static final Logger log = Logger.getLogger(PropertyRequestResource.class.getName());
 
   @PUT
   public Response updateEntity(
-	  @Context Providers providers,
+      @Context Providers providers,
       @PathParam("entitySetName") String entitySetName,
       @PathParam("id") String id,
       @PathParam("navProp") String navProp) {
@@ -83,7 +82,8 @@ public class PropertyRequestResource extends BaseResource {
       OEntity entity = getRequestEntity(httpHeaders, uriInfo, payload, metadata, ees.getName(), OEntityKey.parse(id));
 
       // execute the create
-      EntityResponse response = producer.createEntity(ODataContextImpl.builder().aspect(httpHeaders).aspect(securityContext).build(),
+      EntityResponse response = producer.createEntity(
+          ODataContextImpl.builder().aspect(httpHeaders).aspect(securityContext).build(),
           entitySetName, OEntityKey.parse(id), navProp, entity);
 
       if (response == null) {
@@ -115,7 +115,7 @@ public class PropertyRequestResource extends BaseResource {
 
   @DELETE
   public Response deleteEntity(
-	  @Context Providers providers,
+      @Context Providers providers,
       @PathParam("entitySetName") String entitySetName,
       @PathParam("id") String id,
       @PathParam("navProp") String navProp) {
@@ -124,11 +124,11 @@ public class PropertyRequestResource extends BaseResource {
 
   @GET
   @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
-			ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
-			ODataConstants.APPLICATION_ATOM_XML,
-			ODataConstants.APPLICATION_XML,
-			ODataConstants.APPLICATION_JAVASCRIPT })
+      ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML,
+      ODataConstants.APPLICATION_JAVASCRIPT })
   public Response getNavProperty(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -188,8 +188,7 @@ public class PropertyRequestResource extends BaseResource {
           .ok(entity, ODataConstants.TEXT_PLAIN_CHARSET_UTF8)
           .header(ODataConstants.Headers.DATA_SERVICE_VERSION, version.asString)
           .build();
-    }
-    else {
+    } else {
 
       BaseResponse response = producer.getNavProperty(
           ODataContextImpl.builder().aspect(httpHeaders).aspect(securityContext).build(),
@@ -207,47 +206,44 @@ public class PropertyRequestResource extends BaseResource {
       StringWriter sw = new StringWriter();
       FormatWriter<?> fwBase;
       if (response instanceof PropertyResponse) {
-        FormatWriter<PropertyResponse> fw =
-            FormatWriterFactory.getFormatWriter(
-                PropertyResponse.class,
-                httpHeaders.getAcceptableMediaTypes(),
-                format,
-                callback);
+        FormatWriter<PropertyResponse> fw = FormatWriterFactory.getFormatWriter(
+            PropertyResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
         fw.write(uriInfo, sw, (PropertyResponse) response);
         fwBase = fw;
       } else if (response instanceof RawResponse) {
-          FormatWriter<RawResponse> fw =
-              FormatWriterFactory.getFormatWriter(
-                  RawResponse.class,
-                  httpHeaders.getAcceptableMediaTypes(),
-                  format,
-                  callback);
+        FormatWriter<RawResponse> fw = FormatWriterFactory.getFormatWriter(
+            RawResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
 
-          fw.write(uriInfo, sw, (RawResponse) response);
-          fwBase = fw;
+        fw.write(uriInfo, sw, (RawResponse) response);
+        fwBase = fw;
       } else if (response instanceof EntityResponse) {
-        FormatWriter<EntityResponse> fw =
-            FormatWriterFactory.getFormatWriter(
-                EntityResponse.class,
-                httpHeaders.getAcceptableMediaTypes(),
-                format,
-                callback);
+        FormatWriter<EntityResponse> fw = FormatWriterFactory.getFormatWriter(
+            EntityResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
         fw.write(uriInfo, sw, (EntityResponse) response);
         fwBase = fw;
       } else if (response instanceof EntitiesResponse) {
-        FormatWriter<EntitiesResponse> fw =
-            FormatWriterFactory.getFormatWriter(
-                EntitiesResponse.class,
-                httpHeaders.getAcceptableMediaTypes(),
-                format,
-                callback);
+        FormatWriter<EntitiesResponse> fw = FormatWriterFactory.getFormatWriter(
+            EntitiesResponse.class,
+            httpHeaders.getAcceptableMediaTypes(),
+            format,
+            callback);
         fw.write(uriInfo, sw, (EntitiesResponse) response);
         fwBase = fw;
 
         // TODO remove this hack, check whether we are Version 2.0 compatible anyway
         // the JsonWriter writes feed currently always as Version 2.0
         version = MediaType.valueOf(fw.getContentType()).isCompatible(MediaType.APPLICATION_JSON_TYPE)
-            ? ODataVersion.V2 : ODataVersion.V2;
+            ? ODataVersion.V2
+            : ODataVersion.V2;
       } else {
         throw new NotImplementedException("Unknown BaseResponse type: " + response.getClass().getName());
       }

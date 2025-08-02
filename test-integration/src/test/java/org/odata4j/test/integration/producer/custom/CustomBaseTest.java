@@ -1,6 +1,6 @@
 package org.odata4j.test.integration.producer.custom;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.core4j.Func1;
 import org.junit.After;
@@ -54,14 +54,14 @@ public abstract class CustomBaseTest extends AbstractRuntimeTest {
   public void dumpResource(String path, FormatType ft) {
     String uri = endpointUri + path;
     switch (ft) {
-    case JSON:
-      this.rtFacade.accept(uri, MediaType.APPLICATION_JSON_TYPE);
-      break;
-    case ATOM:
-      this.rtFacade.accept(uri, MediaType.APPLICATION_ATOM_XML_TYPE);
-      break;
-    default:
-      break;
+      case JSON:
+        this.rtFacade.accept(uri, MediaType.APPLICATION_JSON_TYPE);
+        break;
+      case ATOM:
+        this.rtFacade.accept(uri, MediaType.APPLICATION_ATOM_XML_TYPE);
+        break;
+      default:
+        break;
     }
     System.out.println(this.rtFacade.getWebResource(uri));
   }

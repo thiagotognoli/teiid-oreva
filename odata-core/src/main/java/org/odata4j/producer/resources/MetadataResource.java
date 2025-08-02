@@ -2,19 +2,19 @@ package org.odata4j.producer.resources;
 
 import java.io.StringWriter;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.ext.Providers;
 
 import org.odata4j.core.ODataConstants;
 import org.odata4j.edm.EdmDataServices;
@@ -27,12 +27,13 @@ import org.odata4j.producer.edm.MetadataProducer;
 @Path("{first: \\$}metadata")
 public class MetadataResource {
 
-  private static final MediaType APPLICATION_ATOMSVC_XML_MEDIATYPE = MediaType.valueOf(ODataConstants.APPLICATION_ATOMSVC_XML);
+  private static final MediaType APPLICATION_ATOMSVC_XML_MEDIATYPE = MediaType
+      .valueOf(ODataConstants.APPLICATION_ATOMSVC_XML);
 
   @GET
   @Produces({ ODataConstants.APPLICATION_XML_CHARSET_UTF8,
-			ODataConstants.APPLICATION_ATOMSVC_XML_CHARSET_UTF8,
-			ODataConstants.APPLICATION_XML })
+      ODataConstants.APPLICATION_ATOMSVC_XML_CHARSET_UTF8,
+      ODataConstants.APPLICATION_XML })
   public Response getMetadata(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -41,7 +42,8 @@ public class MetadataResource {
 
     ODataProducer producer = BaseResource.getODataProducer(providers);
 
-    // a request for media type atomsvc+xml means give me the service document of the metadata producer
+    // a request for media type atomsvc+xml means give me the service document of
+    // the metadata producer
     if ("atomsvc".equals(format) || isAtomSvcRequest(httpHeaders)) {
       MetadataProducer metadataProducer = producer.getMetadataProducer();
       if (metadataProducer == null) {
@@ -73,10 +75,10 @@ public class MetadataResource {
   @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
       ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
       ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
-		ODataConstants.APPLICATION_ATOM_XML,
-		ODataConstants.APPLICATION_XML,
-		ODataConstants.APPLICATION_JAVASCRIPT })
-      
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML,
+      ODataConstants.APPLICATION_JAVASCRIPT })
+
   public Response getMetadataEntities(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -103,7 +105,8 @@ public class MetadataResource {
     }
 
     EntitiesRequestResource r = new EntitiesRequestResource();
-    return r.getEntitiesImpl(httpHeaders, uriInfo, securityContext, metadataProducer, entitySetName, false, inlineCount, top, skip, filter, orderBy, format, callback, skipToken, expand, select);
+    return r.getEntitiesImpl(httpHeaders, uriInfo, securityContext, metadataProducer, entitySetName, false, inlineCount,
+        top, skip, filter, orderBy, format, callback, skipToken, expand, select);
   }
 
   @GET
@@ -111,10 +114,10 @@ public class MetadataResource {
   @Produces({ ODataConstants.APPLICATION_ATOM_XML_CHARSET_UTF8,
       ODataConstants.TEXT_JAVASCRIPT_CHARSET_UTF8,
       ODataConstants.APPLICATION_JAVASCRIPT_CHARSET_UTF8,
-		ODataConstants.APPLICATION_ATOM_XML,
-		ODataConstants.APPLICATION_XML,
-		ODataConstants.APPLICATION_JAVASCRIPT })
-      
+      ODataConstants.APPLICATION_ATOM_XML,
+      ODataConstants.APPLICATION_XML,
+      ODataConstants.APPLICATION_JAVASCRIPT })
+
   public Response getMetadataEntity(
       @Context HttpHeaders httpHeaders,
       @Context UriInfo uriInfo,
@@ -135,7 +138,8 @@ public class MetadataResource {
     }
 
     EntityRequestResource r = new EntityRequestResource();
-    return r.getEntityImpl(httpHeaders, uriInfo, securityContext, metadataProducer, entitySetName, id, format, callback, expand, select);
+    return r.getEntityImpl(httpHeaders, uriInfo, securityContext, metadataProducer, entitySetName, id, format, callback,
+        expand, select);
   }
 
   private static NotImplementedException newMetadataNotImplementedException() {

@@ -1,6 +1,6 @@
 package org.odata4j.format;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.odata4j.core.OCollection;
 import org.odata4j.core.OComplexObject;
@@ -25,7 +25,8 @@ import org.odata4j.format.xml.AtomSingleLinkFormatParser;
 
 public class FormatParserFactory {
 
-  private FormatParserFactory() {}
+  private FormatParserFactory() {
+  }
 
   private static interface FormatParsers {
     FormatParser<Feed> getFeedFormatParser(Settings settings);
@@ -69,7 +70,8 @@ public class FormatParserFactory {
     } else if (OEntity.class.isAssignableFrom(targetType)) {
       return (FormatParser<T>) formatParsers.getEntityFormatParser(settings);
     }
-    throw new IllegalArgumentException("Unable to locate format parser for " + targetType.getName() + " and format " + type);
+    throw new IllegalArgumentException(
+        "Unable to locate format parser for " + targetType.getName() + " and format " + type);
   }
 
   public static <T> FormatParser<T> getParser(Class<T> targetType, MediaType contentType, Settings settings) {
@@ -77,7 +79,8 @@ public class FormatParserFactory {
     FormatType type;
     if (contentType.isCompatible(MediaType.APPLICATION_JSON_TYPE))
       type = FormatType.JSON;
-    else if (contentType.isCompatible(MediaType.APPLICATION_ATOM_XML_TYPE) && (Feed.class.isAssignableFrom(targetType) || Entry.class.isAssignableFrom(targetType))
+    else if (contentType.isCompatible(MediaType.APPLICATION_ATOM_XML_TYPE)
+        && (Feed.class.isAssignableFrom(targetType) || Entry.class.isAssignableFrom(targetType))
         || contentType.isCompatible(MediaType.APPLICATION_XML_TYPE))
       type = FormatType.ATOM;
     else

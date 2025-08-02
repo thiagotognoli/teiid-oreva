@@ -1,6 +1,6 @@
 package org.odata4j.format.json;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.odata4j.format.SingleLink;
 import org.odata4j.format.SingleLinks;
@@ -33,15 +33,17 @@ public class JsonSingleLinksFormatWriter extends JsonFormatWriter<SingleLinks> {
 }
 
 /*
-{
-"d" : {
-"results": [
-{
-"uri": "http://services.odata.org/northwind/Northwind.svc/Order_Details(OrderID=10285,ProductID=1)"
-}, {
-"uri": "http://services.odata.org/northwind/Northwind.svc/Order_Details(OrderID=10294,ProductID=1)"
-}
-]
-}
-}
-*/
+ * {
+ * "d" : {
+ * "results": [
+ * {
+ * "uri":
+ * "http://services.odata.org/northwind/Northwind.svc/Order_Details(OrderID=10285,ProductID=1)"
+ * }, {
+ * "uri":
+ * "http://services.odata.org/northwind/Northwind.svc/Order_Details(OrderID=10294,ProductID=1)"
+ * }
+ * ]
+ * }
+ * }
+ */

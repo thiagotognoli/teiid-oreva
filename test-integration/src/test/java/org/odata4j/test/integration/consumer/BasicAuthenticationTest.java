@@ -3,14 +3,16 @@ package org.odata4j.test.integration.consumer;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-import org.eclipse.jetty.http.security.Constraint;
-import org.eclipse.jetty.http.security.Password;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.UserStore;
 import org.joda.time.LocalDateTime;
 import org.junit.Test;
 import org.odata4j.consumer.ODataConsumer;
@@ -24,6 +26,8 @@ import org.odata4j.examples.producer.inmemory.AddressBookInMemoryExample;
 import org.odata4j.exceptions.NotImplementedException;
 import org.odata4j.producer.resources.DefaultODataProducerProvider;
 import org.odata4j.test.integration.AbstractODataConsumerTest;
+import org.odata4j.test.integration.AbstractRuntimeTest.RuntimeFacadeType;
+import org.junit.Assert;
 
 import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.BasicAuthenticator;
@@ -82,8 +86,13 @@ public class BasicAuthenticationTest extends AbstractODataConsumerTest {
   }
 
   private HashLoginService loginService() {
-    HashLoginService loginService = new HashLoginService();
-    loginService.update(USERNAME, new Password(PASSWORD), new String[] { ROLE });
+    // HashLoginService loginService = new HashLoginService();
+    // loginService.update(USERNAME, new Password(PASSWORD), new String[] { ROLE });
+    // return loginService;
+    HashLoginService loginService = new HashLoginService("MyRealm");
+    UserStore userStore = new UserStore();
+    userStore.addUser(USERNAME, new Password(PASSWORD), new String[] { ROLE });
+    loginService.setUserStore(userStore);
     return loginService;
   }
 
@@ -103,7 +112,7 @@ public class BasicAuthenticationTest extends AbstractODataConsumerTest {
     ODataConsumer unauthorizedConsumer = rtFacade.createODataConsumer(BASE_URI, format);
     try {
       unauthorizedConsumer.getEntities("Persons").execute();
-      fail();
+      Assert.fail();
     } catch (RuntimeException e) {
       assertThat(e.getMessage(), containsString("Unauthorized"));
     }
@@ -115,17 +124,18 @@ public class BasicAuthenticationTest extends AbstractODataConsumerTest {
     assertThat(entity, notNullValue());
   }
 
-  @Test(expected=NotImplementedException.class)
+  @Test(expected = NotImplementedException.class)
   public void createEntity() throws Exception {
     OProperty<Integer> personId = OProperties.int32("PersonId", Integer.valueOf(4));
     OProperty<String> name = OProperties.string("Name", "Stephanie Spring");
     OProperty<String> emailAddress = OProperties.string("EmailAddress", "st.spring@mail-provider.com");
     OProperty<LocalDateTime> birthDay = OProperties.datetime("BirthDay", new LocalDateTime(1979, 4, 9, 0, 0));
 
-    assertThat(consumer.createEntity("Persons").properties(personId, name, emailAddress, birthDay).execute(), notNullValue());
+    assertThat(consumer.createEntity("Persons").properties(personId, name, emailAddress, birthDay).execute(),
+        notNullValue());
   }
 
-  @Test(expected=NotImplementedException.class)
+  @Test(expected = NotImplementedException.class)
   public void updateEntity() throws Exception {
     OProperty<String> newEmailAddress = OProperties.string("EmailAddress", "walter.winter@new-company.com");
 
@@ -133,7 +143,7 @@ public class BasicAuthenticationTest extends AbstractODataConsumerTest {
     consumer.updateEntity(entity).properties(newEmailAddress).execute();
   }
 
-  @Test(expected=NotImplementedException.class)
+  @Test(expected = NotImplementedException.class)
   public void deleteEntity() throws Exception {
     consumer.deleteEntity("Persons", Integer.valueOf(3)).execute();
   }

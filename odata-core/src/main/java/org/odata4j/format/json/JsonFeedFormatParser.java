@@ -4,7 +4,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.odata4j.core.ODataVersion;
 import org.odata4j.core.OEntity;

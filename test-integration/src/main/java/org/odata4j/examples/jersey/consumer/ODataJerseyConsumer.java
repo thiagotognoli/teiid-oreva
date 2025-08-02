@@ -1,7 +1,9 @@
 package org.odata4j.examples.jersey.consumer;
 
-import javax.ws.rs.ext.RuntimeDelegate;
+import jakarta.ws.rs.ext.RuntimeDelegate;
 
+import org.glassfish.jersey.internal.AbstractRuntimeDelegate;
+import org.glassfish.jersey.internal.RuntimeDelegateImpl;
 import org.odata4j.consumer.AbstractODataConsumer;
 import org.odata4j.consumer.ODataClient;
 import org.odata4j.consumer.ODataConsumer;
@@ -15,12 +17,14 @@ public class ODataJerseyConsumer extends AbstractODataConsumer {
 
   private ODataJerseyClient client;
 
-  private ODataJerseyConsumer(FormatType type, String serviceRootUri, JerseyClientFactory clientFactory, OClientBehavior... behaviors) {
+  private ODataJerseyConsumer(FormatType type, String serviceRootUri, JerseyClientFactory clientFactory,
+      OClientBehavior... behaviors) {
     super(serviceRootUri);
 
-    // ensure that a correct JAX-RS implementation (Jersey, server or default) is loaded
-    if (!(RuntimeDelegate.getInstance() instanceof com.sun.jersey.core.spi.factory.AbstractRuntimeDelegate))
-      RuntimeDelegate.setInstance(new com.sun.ws.rs.ext.RuntimeDelegateImpl());
+    // ensure that a correct JAX-RS implementation (Jersey, server or default) is
+    // loaded
+    if (!(RuntimeDelegate.getInstance() instanceof AbstractRuntimeDelegate))
+      RuntimeDelegate.setInstance(new RuntimeDelegateImpl());
 
     this.client = new ODataJerseyClient(type, clientFactory, behaviors);
   }
@@ -49,7 +53,7 @@ public class ODataJerseyConsumer extends AbstractODataConsumer {
     /**
      * Sets a preferred {@link FormatType}. Defaults to {@code FormatType.ATOM}.
      *
-     * @param formatType  the format type
+     * @param formatType the format type
      * @return this builder
      */
     public Builder setFormatType(FormatType formatType) {
@@ -60,7 +64,7 @@ public class ODataJerseyConsumer extends AbstractODataConsumer {
     /**
      * Sets a specific {@link JerseyClientFactory}.
      *
-     * @param clientFactory  the jersey client factory
+     * @param clientFactory the jersey client factory
      * @return this builder
      */
     public Builder setClientFactory(JerseyClientFactory clientFactory) {
@@ -71,9 +75,11 @@ public class ODataJerseyConsumer extends AbstractODataConsumer {
     /**
      * Sets one or more client behaviors.
      *
-     * <p>Client behaviors transform http requests to interact with services that require custom extensions.
+     * <p>
+     * Client behaviors transform http requests to interact with services that
+     * require custom extensions.
      *
-     * @param clientBehaviors  the client behaviors
+     * @param clientBehaviors the client behaviors
      * @return this builder
      */
     public Builder setClientBehaviors(OClientBehavior... clientBehaviors) {
@@ -97,7 +103,7 @@ public class ODataJerseyConsumer extends AbstractODataConsumer {
   /**
    * Constructs a new builder for an {@link ODataJerseyConsumer} object.
    *
-   * @param serviceRootUri  the OData service root uri
+   * @param serviceRootUri the OData service root uri
    */
   public static Builder newBuilder(String serviceRootUri) {
     return new Builder(serviceRootUri);
@@ -106,9 +112,14 @@ public class ODataJerseyConsumer extends AbstractODataConsumer {
   /**
    * Creates a new consumer for the given OData service uri.
    *
-   * <p>Wrapper for {@code ODataJerseyConsumer.newBuilder(serviceRootUri).build()}.
+   * <p>
+   * Wrapper for {@code ODataJerseyConsumer.newBuilder(serviceRootUri).build()}.
    *
-   * @param serviceRootUri  the service uri <p>e.g. <code>http://services.odata.org/Northwind/Northwind.svc/</code></p>
+   * @param serviceRootUri the service uri
+   *                       <p>
+   *                       e.g.
+   *                       <code>http://services.odata.org/Northwind/Northwind.svc/</code>
+   *                       </p>
    * @return a new OData consumer
    */
   public static ODataJerseyConsumer create(String serviceRootUri) {

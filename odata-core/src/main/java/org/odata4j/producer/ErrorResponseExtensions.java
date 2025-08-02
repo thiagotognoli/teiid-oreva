@@ -1,12 +1,13 @@
 package org.odata4j.producer;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.odata4j.exceptions.ODataProducerException;
 
 /**
- * This class provides implementations of the {@link ErrorResponseExtension} interface for common
+ * This class provides implementations of the {@link ErrorResponseExtension}
+ * interface for common
  * use cases.
  */
 public class ErrorResponseExtensions {
@@ -23,7 +24,8 @@ public class ErrorResponseExtensions {
   }
 
   /**
-   * Default system property and query parameter that drives whether or not inner errors are returned.
+   * Default system property and query parameter that drives whether or not inner
+   * errors are returned.
    *
    * @see ErrorResponseExtensions#returnInnerErrorsBasedOnDefaultSystemProperty
    * @see ErrorResponseExtensions#returnInnerErrorsBasedOnDefaultQueryParameter
@@ -42,7 +44,7 @@ public class ErrorResponseExtensions {
   /**
    * Returns inner errors when a system property is set to {@code true}.
    *
-   * @param propertyName  the system property key
+   * @param propertyName the system property key
    */
   public static final ErrorResponseExtension returnInnerErrorsBasedOnSystemProperty(final String propertyName) {
     return new ErrorResponseExtension() {
@@ -64,7 +66,7 @@ public class ErrorResponseExtensions {
   /**
    * Returns inner errors when a custom query parameter is set to {@code true}.
    *
-   * @param queryParameterName  the custom parameter key
+   * @param queryParameterName the custom parameter key
    */
   public static final ErrorResponseExtension returnInnerErrorsBasedOnQueryParameter(final String queryParameterName) {
     return new ErrorResponseExtension() {

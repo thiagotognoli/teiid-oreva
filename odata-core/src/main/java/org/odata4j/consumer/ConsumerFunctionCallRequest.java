@@ -10,6 +10,7 @@ import java.util.List;
 import org.core4j.Enumerable;
 import org.core4j.Func;
 import org.core4j.ReadOnlyIterator;
+import org.core4j.ReadOnlyIterator.IterationResult;
 import org.joda.time.LocalDateTime;
 import org.odata4j.core.Guid;
 import org.odata4j.core.OCollection;
@@ -186,10 +187,13 @@ public class ConsumerFunctionCallRequest<T extends OObject>
   private OObject doRequest(ODataClientRequest request) throws ODataProducerException {
     ODataClientResponse response = getClient().callFunction(request);
 
-    ODataVersion version = InternalUtil.getDataServiceVersion(response.getHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
+    ODataVersion version = InternalUtil
+        .getDataServiceVersion(response.getHeaders().getFirst(ODataConstants.Headers.DATA_SERVICE_VERSION));
 
+    Class<? extends OObject> returnTypeClass = function.getReturnType().isSimple() ? OSimpleObject.class
+        : EdmType.getInstanceType(function.getReturnType());
     FormatParser<? extends OObject> parser = FormatParserFactory.getParser(
-        function.getReturnType().isSimple() ? OSimpleObject.class : EdmType.getInstanceType(function.getReturnType()),
+        returnTypeClass,
         getClient().getFormatType(),
         new Settings(
             version,

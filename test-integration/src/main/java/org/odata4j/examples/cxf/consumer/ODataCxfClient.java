@@ -10,12 +10,12 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.Status.Family;
-import javax.ws.rs.core.Response.StatusType;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status.Family;
+import jakarta.ws.rs.core.Response.StatusType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -61,14 +61,16 @@ import org.odata4j.stax2.util.StaxUtil;
  */
 public class ODataCxfClient extends AbstractODataClient {
 
-  private final OClientBehavior[] requiredBehaviors = new OClientBehavior[] { OClientBehaviors.methodTunneling("MERGE") };
+  private final OClientBehavior[] requiredBehaviors = new OClientBehavior[] {
+      OClientBehaviors.methodTunneling("MERGE") };
   private final OClientBehavior[] behaviors;
 
   private final HttpClient httpClient;
 
   public ODataCxfClient(FormatType type, OClientBehavior... behaviors) {
     super(type);
-    this.behaviors = Enumerable.create(requiredBehaviors).concat(Enumerable.create(behaviors)).toArray(OClientBehavior.class);
+    this.behaviors = Enumerable.create(requiredBehaviors).concat(Enumerable.create(behaviors))
+        .toArray(OClientBehavior.class);
     this.httpClient = new DefaultHttpClient();
 
     if (System.getProperties().containsKey("http.proxyHost") && System.getProperties().containsKey("http.proxyPort")) {
@@ -99,7 +101,8 @@ public class ODataCxfClient extends AbstractODataClient {
   }
 
   @SuppressWarnings("unchecked")
-  protected ODataClientResponse doRequest(FormatType reqType, ODataClientRequest request, StatusType... expectedResponseStatus) throws ODataProducerException {
+  protected ODataClientResponse doRequest(FormatType reqType, ODataClientRequest request,
+      StatusType... expectedResponseStatus) throws ODataProducerException {
     UriBuilder uriBuilder = UriBuilder.fromPath(request.getUrl());
     for (String key : request.getQueryParams().keySet())
       uriBuilder = uriBuilder.queryParam(key, request.getQueryParams().get(key));
@@ -140,8 +143,8 @@ public class ODataCxfClient extends AbstractODataClient {
         throw new IllegalArgumentException("Unsupported payload: " + request.getPayload());
 
       StringWriter sw = new StringWriter();
-      FormatWriter<Object> fw = (FormatWriter<Object>)
-          FormatWriterFactory.getFormatWriter(payloadClass, null, this.getFormatType().toString(), null);
+      FormatWriter<Object> fw = (FormatWriter<Object>) FormatWriterFactory.getFormatWriter(payloadClass, null,
+          this.getFormatType().toString(), null);
       fw.write(null, sw, request.getPayload());
       String entityString = sw.toString();
 
@@ -195,7 +198,8 @@ public class ODataCxfClient extends AbstractODataClient {
     RuntimeException exception;
     String textEntity = entityToString(httpResponse.getEntity()); // input stream can only be consumed once
     try {
-      // report error as ODataProducerException in case we get a well-formed OData error...
+      // report error as ODataProducerException in case we get a well-formed OData
+      // error...
       MediaType contentType = MediaType.valueOf(httpResponse.getEntity().getContentType().getValue());
       OError error = FormatParserFactory.getParser(OError.class, contentType, null).parse(new StringReader(textEntity));
       exception = ODataProducerExceptions.create(status, error);
@@ -211,7 +215,8 @@ public class ODataCxfClient extends AbstractODataClient {
     HttpResponse httpResponse = ((CxfClientResponse) response).getHttpResponse();
     try {
       InputStream textEntity = httpResponse.getEntity().getContent();
-      return StaxUtil.newXMLEventReader(new BOMWorkaroundReader(new InputStreamReader(textEntity, Charsets.Upper.UTF_8)));
+      return StaxUtil
+          .newXMLEventReader(new BOMWorkaroundReader(new InputStreamReader(textEntity, Charsets.Upper.UTF_8)));
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }
@@ -219,26 +224,27 @@ public class ODataCxfClient extends AbstractODataClient {
 
   private HttpUriRequest getRequestByMethod(String method, URI uri) {
     switch (ODataHttpMethod.fromString(method)) {
-    case GET:
-      return new HttpGet(uri);
-    case PUT:
-      return new HttpPut(uri);
-    case POST:
-      return new HttpPost(uri);
-    case DELETE:
-      return new HttpDelete(uri);
-    case OPTIONS:
-      return new HttpOptions(uri);
-    case HEAD:
-      return new HttpHead(uri);
-    default:
-      throw new RuntimeException("Method unknown: " + method);
+      case GET:
+        return new HttpGet(uri);
+      case PUT:
+        return new HttpPut(uri);
+      case POST:
+        return new HttpPost(uri);
+      case DELETE:
+        return new HttpDelete(uri);
+      case OPTIONS:
+        return new HttpOptions(uri);
+      case HEAD:
+        return new HttpHead(uri);
+      default:
+        throw new RuntimeException("Method unknown: " + method);
     }
   }
 
   private String entityToString(HttpEntity entity) {
     try {
-      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entity.getContent(), Charsets.Upper.UTF_8));
+      BufferedReader bufferedReader = new BufferedReader(
+          new InputStreamReader(entity.getContent(), Charsets.Upper.UTF_8));
       StringBuilder stringBuilder = new StringBuilder();
       String line = null;
 
